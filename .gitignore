@@ -14,6 +14,6 @@ TeXFiles/.DS_Store
 *.xml
 *.gz
 *.toc
-thesis.fdb_latexmk
-thesis.fls
+*.fdb_latexmk
+*.fls
 thesis.pdf
