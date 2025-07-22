@@ -3,22 +3,127 @@
 % Was sind DuckieBots?
 % Was ist DuckieTown?
 
+Im Rahmen der Lehrveranstaltung „Robogistics“ wurde ein praxisnahes Projekt zur Entwicklung und Umsetzung 
+autonomer Funktionen auf einem mobilen Robotersystem – dem sogenannten Duckiebot – durchgeführt. Ziel war es, 
+sowohl grundlegende als auch fortgeschrittene Konzepte der mobilen Robotik, Bildverarbeitung und Systemintegration
+anhand eines realitätsnahen Anwendungsszenarios zu erlernen und praktisch anzuwenden. Die eingesetzte
+Modellumgebung „Duckietown“ stellte dabei eine simulierte Stadt im Miniaturmaßstab dar, in der verschiedene 
+Verkehrssituationen wie Fahrspuren, Kreuzungen, Haltemarkierungen und visuelle Hindernisse durch Spielzeugenten 
+abgebildet wurden (vgl. \cite{wurll2025}). 
+
+Der Duckiebot ist ein kompakter mobiler Roboter, ausgestattet mit Kamera, Sensorik und einem Antriebssystem, 
+der ausschließlich über visuelle Informationen gesteuert wird. Die Kamera dient dabei als zentrales 
+Wahrnehmungssystem zur Erkennung von Fahrbahnlinien, Verkehrszeichen und Objekten, was eine 
+bildverarbeitungsbasierte Navigation ermöglicht. Die Projektumgebung ermöglichte so eine vereinfachte, 
+aber praxisnahe Abbildung typischer Herausforderungen des autonomen Fahrens (vgl. \cite{duckiebot2025}). 
+
+Im Verlauf des Projekts waren fünf aufeinander aufbauende Aufgaben zu lösen, die verschiedene Aspekte 
+autonomer Mobilität abdeckten. Diese umfassten Spurverfolgung, Kreuzungsmanagement, Hindernisvermeidung, 
+Parkmanöver und das koordinierte Zusammenspiel mehrerer Roboter in einem Gesamtlaufszenario. Für jede Challenge 
+war eine funktionierende Lösung zu entwickeln, die innerhalb eines definierten Zeitrahmens praktisch demonstriert 
+werden musste. Der Schwierigkeitsgrad stieg dabei von Aufgabe zu Aufgabe, was sowohl technisches Verständnis
+als auch methodische Planung erforderte. 
+
+Während des Projekts galt es, fünf aufeinanderfolgende Aufgaben zu bewältigen, die unterschiedliche Facetten 
+der autonomen Mobilität abdeckten. Diese beinhalteten die Spurverfolgung, das Management von Kreuzungen, das 
+Vermeiden von Hindernissen, Parkvorgänge sowie das koordinierte Zusammenwirken mehrerer Roboter in einem 
+Gesamtablaufszenario. Für jede Challenge war eine funktionierende Lösung zu entwickeln. Der Schwierigkeitsgrad 
+nahm von Aufgabe zu Aufgabe zu, was ein technisches Verständnis und eine methodische Planung erforderte. 
+
+Zur technischen Umsetzung kamen verschiedene Tools zum Einsatz, unter anderem das Robot Operating System (ROS), 
+Docker, Git und die Duckietown-Shell. Die Entwicklungsumgebung basierte auf einem Ubuntu-System und erforderte
+grundlegende Kenntnisse im Umgang mit der Kommandozeile und Containervirtualisierung. Neben dem technischen 
+Know-how lag ein weiterer Fokus auf der Modularisierung der Software, der Analyse von Sensordaten sowie der 
+robusten Interaktion zwischen System und Umgebung. 
+
+Ziel dieses Berichts ist es, die technische Umsetzung der einzelnen Aufgaben nachzuvollziehen, verwendete 
+Methoden und Werkzeuge zu beschreiben und die Herausforderungen sowie Lösungsansätze aus fachlicher 
+Perspektive zu reflektieren. Darüber hinaus werden Erkenntnisse hinsichtlich der Systemarchitektur, der 
+Softwareentwicklung und der praxisorientierten Ausbildung im Bereich autonomer Robotik abgeleitet. 
 
 
 
-
-\section{Zielstellung}
+\section{Duckiebot und Duckietown}
 \label{sec:Zielstellung}
 % Aufgabenstellung / Challenges
 
+Der Duckiebot DB21J ist ein modular aufgebauter Lernroboter, der speziell für Bildungszwecke im 
+Bereich autonomer Robotik entwickelt wurde. Er ist zentraler Bestandteil der Lehr- und Forschungsplattform 
+Duckietown, die Studierenden praxisnah grundlegende Konzepte aus den Bereichen Wahrnehmung, Steuerung und 
+Systemintegration vermittelt. Ziel dieser Plattform ist es, ein tiefes Verständnis für autonome Systeme zu 
+schaffen – nicht nur theoretisch, sondern durch direkte Arbeit an konkreten Herausforderungen. 
 
+\begin{figure}[h]  % h = here (Platzierung)
+    \centering
+    \includegraphics[width=0.5\textwidth]{C:/RKIM/Semester_01_LaufwerkC/QuackSquad_Projekt/HKA_QuackSquad_LaTeX/Figures/png/duckiebot_Aufbau.png}
+  % Pfad zum Bild
+    \caption{Aufbau eines Duckiebots}
+    \label{fig:duckiebot1}
+\end{figure}
 
+Quelle: Vorlesung Wurll
+
+Die Hardware des Duckiebots vereint mechanische, elektronische und softwaretechnische Komponenten in einem 
+kompakten System. Das Chassis besteht aus mehreren Kunststoffebenen (Decks), die durch seitliche Platten und 
+eine Rückwand ergänzt werden. Diese modulare Struktur erleichtert nicht nur Wartung und Erweiterung, sondern 
+schafft auch Übersichtlichkeit im Aufbau. Für die Fortbewegung sorgen zwei Gleichstrommotoren, die jeweils 
+ein Rad antreiben. Durch differenzielle Steuerung kann der Roboter Richtungsänderungen durchführen. Ein 
+zusätzliches omnidirektionales Rad am Heck sorgt für die nötige Stabilität. 
+
+Die Wahrnehmung der Umgebung erfolgt über verschiedene Sensoren. Eine nach vorne gerichtete Kamera mit 160° 
+Sichtfeld erkennt Fahrbahnmarkierungen, Verkehrszeichen und Hindernisse. Ergänzt wird sie durch eine 
+inertiale Messeinheit, die Bewegungs- und Lagedaten liefert, sowie einen Time-of-Flight-Sensor zur 
+Distanzmessung. Hall-Sensoren an den Rädern ermöglichen eine präzise Bewegungskontrolle. Die Verarbeitung 
+dieser Daten übernimmt ein NVIDIA Jetson Nano mit 4 GB RAM. Das Betriebssystem sowie die benötigte Software 
+sind auf einer 64 GB microSD-Karte gespeichert. Gesteuert wird der Duckiebot mit ROS, das in Docker-Containern 
+ausgeführt wird. Dies sorgt für eine einheitliche, reproduzierbare Entwicklungsumgebung. 
+
+Die Stromversorgung erfolgt über eine spezielle Duckiebattery mit 10Ah Kapazität, die über USB-Anschlüsse mit 
+der zentralen Elektronikplatine, dem sogenannten Hardware Unified Topology, verbunden ist. Diese Platine 
+koordiniert sämtliche Ein- und Ausgänge der Sensoren, Motoren und weiteren Peripheriegeräte. Für grundlegende 
+Benutzerinteraktionen verfügt der Roboter über ein kleines Display und einen physischen Knopf auf dem oberen Deck. 
+
+Der Duckiebot ist für den Einsatz in der standardisierten Testumgebung Duckietown konzipiert. Diese Umgebung 
+besteht aus quadratischen Kacheln mit einer Seitenlänge von 60cm, die flexibel zu verschiedenen Straßenszenarien 
+zusammengesetzt werden können. Durch Kombination von Geraden, Kurven, Kreuzungen oder Parkzonen lassen sich 
+sowohl einfache als auch komplexe Verkehrssituationen nachbilden. Die Kacheln sind mit spezifischen 
+Markierungen versehen, die für die Navigation essenziell sind: weiße Linien definieren den rechten Fahrbahnrand, 
+gelbe gestrichelte Linien den linken, und rote Streifen zeigen Stopplinien an. Die gesamte Umgebung kann 
+digital beschrieben und in der Simulationsumgebung Duckietown Gym nachgebildet werden, was eine vorherige 
+virtuelle Erprobung der entwickelten Software ermöglicht.
+
+\begin{figure}[h]  % h = here (Platzierung)
+    \centering
+    \includegraphics[width=0.5\textwidth]{C:/RKIM/Semester_01_LaufwerkC/QuackSquad_Projekt/HKA_QuackSquad_LaTeX/Figures/png/duckietown_Aufbau.png}
+  % Pfad zum Bild
+    \caption{Aufbau eines Duckiebots}
+    \label{fig:duckietown1}
+\end{figure}
+
+Quelle: Seite Duckiebot
+
+Eine weitere visuelle Ebene in Duckietown stellen die Verkehrszeichen dar. Diese werden als aufgedruckte 
+Symbole auf Folien direkt auf die Kacheln gelegt und sind so platziert, dass sie zuverlässig im Sichtfeld 
+der Frontkamera erscheinen. Die Erkennung erfolgt über klassische Bildverarbeitung oder lernbasierte Methoden. 
+Hinzu kommen modulare Parkbereiche, die typischerweise aus zwei Kacheln bestehen und mit gestrichelten Linien 
+als Parkzone ausgewiesen sind. 
+
+Ein besonderes Merkmal von Duckietown ist die didaktische Struktur. Studierende arbeiten schrittweise an 
+Aufgaben wie Linienverfolgung, Interpretation von Kreuzungen, Hindernisvermeidung und Koordination mehrerer 
+Roboter. Gleichzeitig lernen sie den Umgang mit moderner Softwareentwicklung: Versionierung mit Git, Arbeiten 
+mit Containern, Kommandozeilenwerkzeuge und modulare Programmarchitektur. Dabei entsteht ein praxisnahes 
+Verständnis dafür, wie autonome Systeme durch das Zusammenspiel von Hardware, Sensorik, Software und 
+Testumgebung zuverlässig funktionieren. 
+
+Insgesamt stellt Duckietown eine effektive und anschauliche Plattform dar, um theoretische Grundlagen der 
+Robotik mit praktischer Erfahrung zu verknüpfen. Die Kombination aus realer Hardware, standardisierter 
+Umgebung und didaktisch aufbereiteter Software schafft ideale Voraussetzungen für die Ausbildung im Bereich 
+intelligenter Transportsysteme und autonomer Robotik. 
 
 
 \section{Aufbau der Arbeit}
 \label{sec:Aufbau der Arbeit}
-
-
+% nicht notwendig
 
 
 
