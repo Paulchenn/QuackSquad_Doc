@@ -17,18 +17,12 @@ Wahrnehmungssystem zur Erkennung von Fahrbahnlinien, Verkehrszeichen und Objekte
 bildverarbeitungsbasierte Navigation ermöglicht. Die Projektumgebung ermöglichte so eine vereinfachte, 
 aber praxisnahe Abbildung typischer Herausforderungen des autonomen Fahrens (vgl. \cite{duckiebot2025}). 
 
-Im Verlauf des Projekts waren fünf aufeinander aufbauende Aufgaben zu lösen, die verschiedene Aspekte 
-autonomer Mobilität abdeckten. Diese umfassten Spurverfolgung, Kreuzungsmanagement, Hindernisvermeidung, 
-Parkmanöver und das koordinierte Zusammenspiel mehrerer Roboter in einem Gesamtlaufszenario. Für jede Challenge 
-war eine funktionierende Lösung zu entwickeln, die innerhalb eines definierten Zeitrahmens praktisch demonstriert 
-werden musste. Der Schwierigkeitsgrad stieg dabei von Aufgabe zu Aufgabe, was sowohl technisches Verständnis
-als auch methodische Planung erforderte. 
-
-Während des Projekts galt es, fünf aufeinanderfolgende Aufgaben zu bewältigen, die unterschiedliche Facetten 
-der autonomen Mobilität abdeckten. Diese beinhalteten die Spurverfolgung, das Management von Kreuzungen, das 
-Vermeiden von Hindernissen, Parkvorgänge sowie das koordinierte Zusammenwirken mehrerer Roboter in einem 
-Gesamtablaufszenario. Für jede Challenge war eine funktionierende Lösung zu entwickeln. Der Schwierigkeitsgrad 
-nahm von Aufgabe zu Aufgabe zu, was ein technisches Verständnis und eine methodische Planung erforderte. 
+Im Verlauf des Projekts waren fünf aufeinander aufbauende Aufgaben zu lösen, die verschiedene Facetten 
+autonomer Mobilität abdeckten. Diese umfassten die Spurverfolgung, das Management von Kreuzungen, die 
+Hindernisvermeidung, Parkmanöver sowie das koordinierte Zusammenspiel mehrerer Roboter in einem 
+Gesamtablaufszenario. Für jede dieser Challenges war eine funktionierende Lösung zu entwickeln, die 
+innerhalb eines definierten Zeitrahmens praktisch demonstriert werden musste. Der Schwierigkeitsgrad nahm 
+dabei von Aufgabe zu Aufgabe zu, was sowohl technisches Verständnis als auch eine methodische Planung erforderte. 
 
 Zur technischen Umsetzung kamen verschiedene Tools zum Einsatz, unter anderem das Robot Operating System (ROS), 
 Docker, Git und die Duckietown-Shell. Die Entwicklungsumgebung basierte auf einem Ubuntu-System und erforderte
@@ -42,7 +36,6 @@ Perspektive zu reflektieren. Darüber hinaus werden Erkenntnisse hinsichtlich de
 Softwareentwicklung und der praxisorientierten Ausbildung im Bereich autonomer Robotik abgeleitet. 
 
 
-
 \section{Duckiebot und Duckietown}
 \label{sec:Zielstellung}
 % Aufgabenstellung / Challenges
@@ -53,6 +46,14 @@ Duckietown, die Studierenden praxisnah grundlegende Konzepte aus den Bereichen W
 Systemintegration vermittelt. Ziel dieser Plattform ist es, ein tiefes Verständnis für autonome Systeme zu 
 schaffen – nicht nur theoretisch, sondern durch direkte Arbeit an konkreten Herausforderungen. 
 
+Die Hardware des Duckiebots vereint mechanische, elektronische und softwaretechnische Komponenten in einem 
+kompakten System. Das Chassis besteht aus mehreren Kunststoffebenen (Decks), die durch seitliche Platten und 
+eine Rückwand ergänzt werden. Diese modulare Struktur erleichtert nicht nur Wartung und Erweiterung, sondern 
+schafft auch Übersichtlichkeit im Aufbau. Für die Fortbewegung sorgen zwei Gleichstrommotoren, die jeweils 
+ein Rad antreiben. Durch differenzielle Steuerung kann der Roboter Richtungsänderungen durchführen. Ein 
+zusätzliches omnidirektionales Rad am Heck sorgt für die nötige Stabilität (siehe Abbildung \ref{fig:duckiebot1}).
+
+% Abbildung 1: Aufbau eines Duckiebots
 \begin{figure}[h]  % h = here (Platzierung)
     \centering
     \includegraphics[width=0.5\textwidth]{Figures/png/duckiebot_Aufbau.png}
@@ -63,13 +64,6 @@ schaffen – nicht nur theoretisch, sondern durch direkte Arbeit an konkreten He
 \end{figure}
 
 Quelle: Vorlesung Wurll
-
-Die Hardware des Duckiebots vereint mechanische, elektronische und softwaretechnische Komponenten in einem 
-kompakten System. Das Chassis besteht aus mehreren Kunststoffebenen (Decks), die durch seitliche Platten und 
-eine Rückwand ergänzt werden. Diese modulare Struktur erleichtert nicht nur Wartung und Erweiterung, sondern 
-schafft auch Übersichtlichkeit im Aufbau. Für die Fortbewegung sorgen zwei Gleichstrommotoren, die jeweils 
-ein Rad antreiben. Durch differenzielle Steuerung kann der Roboter Richtungsänderungen durchführen. Ein 
-zusätzliches omnidirektionales Rad am Heck sorgt für die nötige Stabilität. 
 
 Die Wahrnehmung der Umgebung erfolgt über verschiedene Sensoren. Eine nach vorne gerichtete Kamera mit 160° 
 Sichtfeld erkennt Fahrbahnmarkierungen, Verkehrszeichen und Hindernisse. Ergänzt wird sie durch eine 
@@ -125,7 +119,17 @@ intelligenter Transportsysteme und autonomer Robotik.
 
 \section{Aufbau der Arbeit}
 \label{sec:Aufbau der Arbeit}
-% nicht notwendig
+
+NOCH ANPASSEN WENN SICH WAS ÄNDERT!
+
+Der vorliegende Projektbericht ist in mehrere Kapitel gegliedert, die jeweils eine der aufeinander 
+aufbauenden Challenges beschreiben. Jedes Kapitel beginnt mit einer grundlegenden Einführung in die 
+jeweilige Aufgabenstellung. Dann werden erste Überlegungen und die Herausforderungen beschrieben.
+Anschließend wird mithilfe eines Ablaufdiagramms die Struktur des entwickelten Codes sowie dessen Zusammenspiel 
+mit anderen Nodes veranschaulicht. Darüber hinaus wird die Herangehensweise erläutert, die zur jeweiligen 
+Lösung geführt hat, einschließlich der getroffenen Entscheidungen und Überlegungen während der Entwicklung. 
+Den Abschluss bildet eine Reflexion der Gruppe in Form eines Fazits zur gesamten Challenge sowie ein Ausblick, 
+der mögliche Erweiterungen oder alternative Lösungsansätze aufzeigt.
 
 
 

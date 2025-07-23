@@ -2,9 +2,126 @@
 %\chaptermark{Intersection Handling}  % short form for headlines on pages
 %\label{ch:IntersectionHandling}
 
+\section{Anforderungen und Herausforderungen}
+\sectionmark{Anf} % short form for headlines on pages
+
+Dieses Kapitel beschreibt die Anforderungen an das System sowie die zentralen Herausforderungen, 
+die im Rahmen der Umsetzung zu bewältigen waren.
+
+Das System soll in der Lage sein, Kreuzungen zuverlässig anhand visueller Merkmale zu erkennen. Als 
+zentrales Erkennungsmerkmal dienen dabei rote Linien im Kamerabild, die auf das Vorhandensein einer Kreuzung 
+hinweisen. Wird eine solche Linie erkannt, soll das Fahrzeug automatisch anhalten, um eine sichere Entscheidung 
+über das weitere Fahrverhalten treffen zu können.
+Im Anschluss sollen alle potenziellen Abbiegerichtungen analysiert werden. Grundlage dafür ist eine 
+Unterteilung des Kamerabildes in verschiedene Zonen – etwa für links, geradeaus und rechts. Aus den erkannten 
+Optionen soll eine Richtung zufällig ausgewählt werden, um ein nicht-deterministisches Fahrverhalten zu erzielen. 
+Basierend auf dieser Wahl ist ein entsprechender Zielpunkt zu berechnen und an die Fahrsteuerung zu übergeben.
+Darüber hinaus soll das System in der Lage sein, andere Fahrzeuge im Umfeld zu erkennen und deren Position zu 
+analysieren. Besonders relevant sind Fahrzeuge, die sich von rechts nähern oder sich bereits im Kreuzungsbereich 
+befinden. Die Entscheidung über das Einfahren in die Kreuzung muss unter Berücksichtigung der geltenden 
+Vorfahrtsregel „Rechts vor Links“ getroffen werden.
+Zur Anzeige der gewählten Fahrtrichtung soll ein Blinksignal aktiviert werden, das während des gesamten 
+Abbiegevorgangs sichtbar bleibt. Es dient sowohl der Information anderer Verkehrsteilnehmer als auch der 
+Erfüllung funktionaler Vorgaben. Nach dem Verlassen der Kreuzung ist das Blinksignal wieder zu deaktivieren.
+Insgesamt soll das System ein sicheres, regelkonformes und flexibles Fahrverhalten gewährleisten, das in der 
+Lage ist, dynamisch auf wechselnde Umgebungsbedingungen zu reagieren.
+
+Im Entwicklungsprozess stellten sich mehrere zentrale Herausforderungen: Zunächst war eine zuverlässige 
+Lokalisierung der roten Linie im Bild erforderlich, insbesondere im Hinblick auf deren genaue Position 
+innerhalb des Bildausschnitts. Darauf aufbauend musste eine robuste Methode zur Ableitung möglicher 
+Abbiegemöglichkeiten entwickelt werden. Eine weitere Anforderung bestand darin, sicherzustellen, dass das 
+Fahrzeug bei erkannter Linie zuverlässig anhält und dieses Verhalten nicht durch konkurrierende Prozesse wie 
+das Spurhalten unterdrückt wird. Schließlich musste festgelegt werden, wie das eigentliche Abbiegen erfolgen 
+soll – ob durch fest vorgegebene Manöver oder eine dynamisch bildgestützte Steuerung.
 
 
+\section{Ablaufdiagramm}
+\sectionmark{Impl} % short form for headlines on pages
+Im nachfolgenden Abschnitt wird das Ablaufdiagramm gezeigt. Eine detaillierte Beschreibung folgt danach.
 
+\begin{figure}[h]  % h = here (Platzierung)
+    \centering
+    \includegraphics[width=0.5\textwidth]{Figures/png/Ablaufdiagramm_Duckie_Abbiegen-Abbiegen.drawio.png}
+  % Pfad zum Bild
+    \caption{Ablaufdiagramm für das Abbiegen des Duckiebots}
+    \label{fig:abbiegen}
+\end{figure}
+
+Die dargestellte Node in Abbildung \ref{fig:abbiegen} ist dafür zuständig, an Kreuzungen anhand einer roten Linie im Kamerabild ein 
+Abbiegeverhalten auszulösen. Der Ablauf beginnt mit dem kontinuierlichen Fahren mittels der Funktion ,,lane\_following''. 
+Währenddessen wird geprüft, ob eine rote Linie erkannt wird. Ist dies nicht der Fall, bleibt das Fahrzeug im 
+Spurhalte-Modus. Sobald jedoch eine rote Linie detektiert wird, hält das Fahrzeug an und wartet drei Sekunden, 
+um ein stabiles Bild zu gewährleisten.
+
+Anschließend wird die Anzahl der roten Pixel im Bild geprüft. Liegt die Anzahl unter einem festgelegten 
+Schwellenwert von 200, wird davon ausgegangen, dass keine rote Linie vorliegt und die Pixel werden ignoriert.
+Wird der Schwellenwert überschritten, erfolgt eine Bestätigung, dass eine rote Linie 
+erkannt wurde und ein entsprechendes Signal wird über einen Publisher gesendet. Daraufhin wird die Anzahl 
+der vorhandenen roten Linien bestimmt, um die möglichen Abbiegerichtungen zu ermitteln.
+
+Die Richtung, in die das Fahrzeug abbiegen soll (links, rechts oder geradeaus), wird mithilfe einer 
+Zufallsfunktion aus den erkannten Möglichkeiten ausgewählt. Entsprechend der gewählten Richtung wird ein 
+Zielwert für die x-Koordinate berechnet und an die zuständige Steuerung gesendet. Danach wird der jeweilige 
+Blinker gesetzt und der Abbiegevorgang eingeleitet. Der Vorgang endet, sobald rechts eine weiße Linie erkannt wird, 
+welche als Abbruchbedingung definiert ist. Danach kehrt das System wieder in den ursprünglichen Zustand zurück, 
+in dem es der Spur folgt und auf die nächste rote Linie wartet.
+
+
+\section{Technische Umsetzung im Code}
+\sectionmark{Tech} % short form for headlines on pages
+% Beschreibung wie man es im Code umgesetzt hat
+Die technische Umsetzung beginnt mit dem Empfang und der Dekodierung des Kamerabildes, das in den HSV-Farbraum 
+umgewandelt wird. Zur Detektion von Rot werden zwei HSV-Bereiche abgedeckt – da Rot am Anfang und Ende des 
+HSV-Farbkreises liegt – und in zwei separate Masken umgewandelt, die anschließend zu einer Gesamtmaske kombiniert 
+werden. Diese hebt alle roten Bildbereiche hervor. Mit der OpenCV-Funktion ,,findContours'' werden daraufhin alle 
+zusammenhängenden roten Flächen über einen gewissen Schwellenwert ermittelt. Kleine, zufällige Flächen werden dabei ignoriert. Zur Lokalisierung der 
+roten Linie wird die y-Position der tiefsten Kontur verwendet: Liegt diese unterhalb eines bestimmten 
+Schwellenwertes im Bild, wird davon ausgegangen, dass sich das Fahrzeug unmittelbar vor einer roten Linie befindet.
+
+Die möglichen Abbiegemöglichkeiten werden anhand der x-Positionen der roten Konturen analysiert. Das Bild wird 
+dafür in drei vertikale Zonen unterteilt: links, Mitte (geradeaus) und rechts. Alle Konturen oberhalb eines 
+gewissen y-Wertes werden dabei berücksichtigt, um störende Elemente nahe der Kamera auszuschließen. Je nach 
+Position der Kontur wird eine entsprechende Bewegungsoption abgeleitet. Eine dieser Richtungen wird zufällig 
+gewählt, um Abwechslung im Verhalten zu ermöglichen. Basierend auf der gewählten Richtung wird ein Zielwert für 
+die x-Koordinate (target\_x) berechnet, der durch Interpolation und Abstandskorrekturen so angepasst wird, dass 
+ein realistisch befahrbarer Pfad entsteht. Diese Zielkoordinate wird an die Fahrsteuerung übermittelt.
+
+Die Berechnung des Zielpunkts target\_x, der für das Einleiten des Abbiegevorgangs verwendet wird, erfolgt 
+dynamisch und ist abhängig von der gewählten Fahrtrichtung sowie der Lage der erkannten roten Linie im Kamerabild. 
+Grundlage ist stets eine zuvor identifizierte rote Kontur, die je nach Richtung unterschiedlich ausgewählt wird: 
+Für das Linksabbiegen wird die linkeste Kontur verwendet, für das Rechtsabbiegen die rechteste, und beim 
+Geradeausfahren diejenige mit der tiefsten Unterkante im Bild. Um die Position der jeweiligen Kontur zu bestimmen, 
+wird mit Hilfe von cv2.boundingRect() ein umschließendes Rechteck berechnet, aus dem die x- und y-Koordinaten 
+sowie die Breite und Höhe der Kontur abgeleitet werden.
+
+Anschließend wird ein sogenannter Offset-Wert berechnet, der die x-Koordinate in Abhängigkeit von der y-Position 
+der Kontur anpasst. Diese y-abhängige Anpassung erfolgt über eine lineare Interpolation (np.interp()), wodurch 
+berücksichtigt wird, wie weit die Kontur von der Kamera entfernt ist. Je nach Richtung fallen die 
+Interpolationsbereiche und Offset-Werte unterschiedlich aus: Beim Linksabbiegen führt eine kleinere y-Position 
+(also näher an der Kamera) zu einem größeren Offset, um eine weite Linkskurve zu ermöglichen. Beim Geradeausfahren 
+und Rechtsabbiegen erfolgt eine ähnliche Anpassung, wobei zusätzlich feste Korrekturwerte hinzugefügt oder abgezogen 
+werden, um den Zielpunkt an die jeweilige Fahrspur anzupassen.
+
+Das so berechnete target\_x stellt schließlich die Zielposition dar, die an die Steuerung übergeben wird, um die 
+Bewegung des Fahrzeugs in die gewünschte Richtung einzuleiten. Diese Methode erlaubt eine flexible und 
+situationsabhängige Anpassung des Fahrverhaltens an die Position und Form der erkannten roten Linie im Bild.
+
+Im Rahmen des Abbiegevorgangs wird zur besseren visuellen Rückmeldung ein LED-Blinksignal aktiviert, das die 
+gewählte Richtung anzeigt. Abhängig davon, ob das Fahrzeug nach links oder rechts abbiegt, werden unterschiedliche 
+LEDs auf der LED-Leiste in einem gelben Blinkmuster angesteuert. Die Blinkfrequenz beträgt dabei 2 Hz, wodurch ein 
+deutlich sichtbares Ein- und Ausschalten der LEDs entsteht. Das Blinken beginnt automatisch, sobald das Fahrzeug 
+an der roten Linie anhält und eine Abbiegerichtung ausgewählt wurde. Es läuft zyklisch, bis der Abbiegevorgang 
+abgeschlossen ist. Nach dem erfolgreichen Verlassen der Kreuzung – signalisiert durch die Erkennung einer weißen 
+Linie – wird das Blinksignal deaktiviert und die LED-Anzeige zurückgesetzt.
+
+Vor dem Einleiten des Abbiegens wird überprüft, ob andere Fahrzeuge die Kreuzung blockieren. Dies geschieht 
+anhand von Bounding Boxes, die über ein separates Topic übermittelt werden. Die Node prüft, ob sich eine dieser 
+Boxen im definierten Kreuzungsbereich befindet oder ob – abhängig von der geplanten Richtung – vorrangberechtigte 
+Fahrzeuge (z.B. rechts oder im Gegenverkehr) erkannt wurden. Nur wenn die Kreuzung als frei bewertet wird, startet 
+der Abbiegevorgang.
+
+Anschließend kehrt das System in den normalen Fahrmodus zurück, setzt die Spurverfolgung fort und wartet auf 
+die Erkennung der nächsten roten Linie
 
 
 
