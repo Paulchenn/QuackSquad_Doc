@@ -1,0 +1,26 @@
+\chapter{Verwendete Tools und Hilfsfunktionen}
+\label{ch:Tools}
+
+Zur erfolgreichen Umsetzung der verschiedenen Challenges im Rahmen des Projekts kamen zwei eigenständig entwickelte Tools zum Einsatz, die gezielt zur Kalibrierung, Analyse und Datenerhebung dienten. Beide Nodes erleichterten die Entwicklung und Optimierung der Bildverarbeitung erheblich und ermöglichten eine praxisnahe Justierung des Systems.
+
+\section{HSV-Kalibrierung mit der \texttt{white\_yellow\_red\_calibration\_node}}
+
+Ein zentrales Element der visuellen Spurverfolgung ist die zuverlässige Segmentierung der Fahrbahnmarkierungen in den Farben Weiß, Gelb und Rot. Diese basiert auf festen Schwellenwerten im HSV-Farbraum. Da die Lichtverhältnisse in der realen Umgebung stark variieren können, war eine manuelle Feinjustierung der Farbgrenzen erforderlich.
+
+Die \texttt{white\_yellow\_red\_calibration\_node} stellte hierzu eine interaktive Kalibrierungsumgebung zur Verfügung. Über eine OpenCV-basierte Benutzeroberfläche konnten für jede der drei Farbklassen die sechs relevanten Parameter (Hue, Saturation, Value: jeweils untere und obere Grenze) per Trackbar in Echtzeit angepasst werden. Die betroffenen Bildbereiche wurden live eingefärbt dargestellt, sodass die Wirkung der Einstellungen unmittelbar visuell überprüft werden konnte.
+
+Zusätzlich war ein Umschalten zwischen den drei Modi \texttt{white}, \texttt{gelb} und \texttt{red} möglich. Die jeweils gewählten Parameter wurden durch Drücken der Taste \texttt{s} in der zugehörigen YAML-Konfigurationsdatei persistiert und konnten somit direkt in der Laufzeitumgebung verwendet werden. Ein akustisches Feedbacksignal (Trigger auf \texttt{/play\_sound\_trigger}) unterstützte die Nutzerführung.
+
+Diese Node war insbesondere in der frühen Phase der Systementwicklung und bei wechselnden Lichtbedingungen ein unverzichtbares Werkzeug zur Sicherstellung einer robusten Farberkennung.
+
+\section{Visuelle Kontrolle und Datensatzgenerierung mit der \texttt{display\_and\_save\_cameraImg\_node}}
+
+Für die Entwicklung der Objekterkennung mit YOLO wurden umfangreiche Datensätze mit annotierten Bildern benötigt. Die \texttt{display\_and\_save\_cameraImg\_node} erfüllte in diesem Zusammenhang zwei Funktionen: einerseits diente sie zur visuellen Kontrolle des Kamerabildes zur Laufzeit, andererseits speicherte sie regelmäßig aktuelle Bildframes ab, um damit die Trainingsdatenbasis zu erweitern.
+
+Die Node subscribed auf das aktuelle Kamerabild des Duckiebots (komprimiertes JPEG über ROS) und zeigt dieses in einem separaten OpenCV-Fenster an. Parallel wird in einem zyklischen Intervall von standardmäßig 3 Sekunden ein Bild aus dem Videostrom unter dem angegebenen Dateinamen abgelegt. Die Dateien wurden im definierten Zielverzeichnis \texttt{/home/QuackSquad/dataset\_botSlot} gespeichert und konnten anschließend annotiert und weiterverarbeitet werden.
+
+Diese automatisierte Bildaufzeichnung war essenziell für den Aufbau und die kontinuierliche Verbesserung des Erkennungsmodells. Gleichzeitig ermöglichte die Node während Testfahrten eine einfache visuelle Rückmeldung zur Kameraposition, Bildqualität und Systemfunktionalität.
+
+\section{Zusammenfassung}
+
+Beide Tools trugen entscheidend zur Effizienz und Qualität der Projektarbeit bei. Während die Kalibrierungs-Node eine präzise Farbanpassung unter realen Bedingungen erlaubte, ermöglichte die Bildspeicher-Node eine systematische Erfassung von Trainingsdaten und Testbildern. Durch ihre Modularität und intuitive Bedienung konnten sie in allen Projektphasen flexibel eingesetzt werden und erleichterten sowohl die Initialisierung als auch die kontinuierliche Weiterentwicklung des Gesamtsystems.

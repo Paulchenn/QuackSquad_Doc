@@ -3,14 +3,20 @@
 %\label{ch:LaneFollowing}
 
 \section{Anforderungen und Herausforderungen}
-\sectionmark{Anf} % short form for headlines on pages
-% Gedankengang beschreiben
-% Wie sind wir zur Lösung gekommen?
-% Herausforderungen und Probleme nennen
+\sectionmark{Anf}
+
+Ziel der ersten Challenge war es, eine robuste Spurverfolgung zu implementieren, bei der sich der Duckiebot allein auf visuelle Informationen stützt, um sich innerhalb der definierten Fahrspur zu bewegen. Dabei mussten Fahrbahnmarkierungen erkannt, analysiert und in Steuerbefehle umgewandelt werden. Zusätzlich war das System in der Lage, Stopplinien anhand farblicher Merkmale zu erkennen und das Fahrzeug gezielt abzubremsen.
+
+Ein wesentliches Problem bestand darin, die unterschiedlichen Linienmerkmale zuverlässig zu detektieren: Während die rechte Fahrbahn durch eine durchgezogene weiße Linie markiert ist, wird die linke Seite durch eine gelbe gestrichelte Linie definiert. Beide Markierungen unterliegen typischen Bildstörungen wie Reflexionen, Schatten oder partiellen Verdeckungen, was eine einfache Schwellenwertanalyse unzureichend machte.
+
+Zur Lösung wurde ein mehrstufiges Verfahren eingesetzt. Zunächst erfolgte eine Farbraumtransformation in HSV, die eine robustere Segmentierung gegenüber Lichtverhältnissen ermöglichte. Für jede Ziel-Farbe (weiß, gelb, rot) wurden separate Masken erstellt und durch Morphologieoperationen (Opening/Closing) bereinigt. Anschließend wurden die Konturen über einen Canny-Kantendetektor extrahiert, um die Linienkanten zu lokalisieren. Die x-Positionen der extremen Kanten (linkeste/rechteste) wurden gespeichert und an nachgelagerte Module übergeben.
+
+Ein weiteres zentrales Problem stellte die Integration der Stopplinien-Erkennung dar. Diese sollte verhindern, dass zufällig auftretende rote Bildpixel eine Bremsung auslösen. Gelöst wurde dies über eine Maskierung des unteren Bildbereichs sowie die Definition eines Schwellwertes für die minimale Pixelanzahl, die eine rote Linie charakterisiert. Nur bei Überschreitung dieser Schwelle wurde ein Stopp-Befehl gesendet.
+
+Besonders wichtig war auch die Glättung der Zielkoordinate \texttt{target\_x}, um ein ruckfreies Lenkverhalten zu erzielen. Hierzu wurde ein Gleitmittelwert über die letzten erkannten Werte gebildet.
 
 \section{Ablaufdiagramm}
-\sectionmark{Impl} % short form for headlines on pages
-% Ablaufdiagramm und Beschreibung der Node
+\sectionmark{Impl}
 
 \begin{figure}[H]
     \centering
@@ -19,14 +25,52 @@
     \label{fig:camera_reader_node}
 \end{figure}
 
-Die Camera-Reader-Node ist dafür verantwortlich, die Bilder der Frontkamera des Duckiebots zu empfangen und für die weitere Verarbeitung aufzubereiten. In Abbildung \ref{fig:camera_reader_node} ist das Ablaufdiagramm der Camera-Reader-Node dargestellt. Die Node beginnt mit der Initialisierung der Kamera und der ROS-Kommunikation. Anschließend wird in einer Endlosschleife kontinuierlich ein Bild von der Kamera empfangen. Dieses Bild wird dann in ein HSV-Bild umgewandelt. Dann wird das Bild auf die relevanten Farben rot, gelb und weiß gefiltert, um die Fahrbahnmarkierungen sowie die Stopp-Linien an Kreuzungen zu erkennen. Die x-Werte der erkannten Linien werden dann gepublished, um von anderen Nodes verarbeitet zu werden. Diese Informationen sind für die Spurverfolgung und die Navigation des Duckiebots essenziell.
+Die \texttt{camera\_reader\_node} ist dafür verantwortlich, die Bilder der Frontkamera des Duckiebots zu empfangen und für die weitere Verarbeitung aufzubereiten. In Abbildung~\ref{fig:camera_reader_node} ist der typische Ablauf der Bildverarbeitung dargestellt.
+
+Die Node beginnt mit der Initialisierung der Kamera und der ROS-Kommunikation. Anschließend wird in einer Endlosschleife kontinuierlich ein Bild empfangen, das in den HSV-Farbraum transformiert wird. Mittels Farbmasken werden die relevanten Bereiche für weiß, gelb und rot isoliert. Über Canny-Kantenerkennung und Konturanalyse werden die Positionen der linken und rechten Fahrbahnlinie berechnet. Die Extrempunkte werden als \texttt{left\_x} und \texttt{right\_x} veröffentlicht. Daraus wird ein mittiger Zielpunkt \texttt{target\_x} berechnet und geglättet.
+
+Zusätzlich wird der untere Bildbereich auf rot gefiltert, um potenzielle Stopplinien zu erkennen. Wird ein definierter Schwellenwert überschritten, wird auf einem separaten Topic ein Stopp-Signal publiziert. Alle berechneten Koordinaten und Debug-Informationen können optional visualisiert werden.
+
 
 \section{Technische Umsetzung im Code}
 \sectionmark{Tech} % short form for headlines on pages
 % Beschreibung wie man es im Code umgesetzt hat
-Am Anfang der Node werden die Publisher und Subscriber initialisiert, um die Kommunikation mit anderen Nodes zu ermöglichen. In der run-Funktion wird das Bild in ein HSV-Bild umgewandelt und für weiß, gelb und rot eine Maske erstellt, mit denen im Bild nach den Farben gefiltert wird. Für die Erkennung einer roten Linie werden die erkannten roten Pixel gezählt und erst ab dem überschreiten des Schwellenwertes von 200 Pixeln wird die Linie als Linie erkannt. So kann gewährleistet werden, dass der Duckiebot nur auf eine Stopplinie reagiert und nicht auf andere rote Objekte, die im Bild auftauchen könnten.
+\label{sec:Challenge1_Code}
 
-Für die Erkennung der Fahrbahnmarkierungen der gelben Mittellinie und der weißen Seitenlinie wird mit Hilfe eines Canny-Filters die Kanten der Linien erkannt. Die am weitesten linke und rechte Kante wird dann aus allen Kanten extrahiert und gepublished. 
+Die Umsetzung der Spurverfolgung erfolgt maßgeblich durch die \texttt{camera\_reader\_node}, welche das Bild der Frontkamera verarbeitet, um relevante Fahrbahnmarkierungen zu erkennen und daraus einen Zielpunkt zur Navigation abzuleiten (siehe Anhang, Listing~\ref{lst:camera_reader_node}).
+
+\subsection{Initialisierung und Konfiguration}
+Beim Start der Node werden verschiedene Parameter und Topics initialisiert. Dazu zählen:
+\begin{itemize}
+    \item Einbindung der Umgebungsvariablen wie \texttt{VEHICLE\_NAME} zur Definition des spezifischen Kameratopics.
+    \item Laden der Farbkonfigurationen aus einer YAML-Datei zur Definition der HSV-Bereiche für Weiß, Gelb und Rot.
+    \item Einrichtung von Publishern für die erkannten Fahrbahnlinien (\texttt{left\_x}, \texttt{right\_x}), der berechneten Zielkoordinate (\texttt{lane}) sowie eines Stoppsignals bei Erkennung einer roten Linie.
+    \item Registrierung von Subscribern für das Kamerabild und erkannte Bounding Boxes von Objekten (Duckies), die für die Filterung von Bildartefakten herangezogen werden.
+\end{itemize}
+
+\subsection{Verarbeitung des Kamerabilds}
+Im Hauptloop wird das empfangene Bild zunächst in den HSV-Farbraum transformiert. Anschließend werden Masken für die Farben Weiß, Gelb und Rot erstellt. Für die Rot-Erkennung werden zwei getrennte HSV-Bereiche (0--10 und 170--180) kombiniert, um die Umbruchstelle im Farbraum zu berücksichtigen.
+
+Die Masken für Weiß und Gelb werden zusätzlich durch morphologische Operationen bereinigt, um Störungen zu minimieren. Zur robusten Detektion der roten Stopplinie wird das Bild vertikal unterteilt, sodass nur rote Pixel im unteren Viertel des Bildes zur Bewertung herangezogen werden. Wird ein konfigurierter Schwellwert an Pixelanzahl überschritten, wird ein Stoppbefehl gesendet:
+\begin{equation}
+    \texttt{if red\_pixels\_low > threshold:\quad publish(Bool(True))}
+\end{equation}
+
+\subsection{Bestimmung des Zielpunkts}
+Zur Spurverfolgung wird ein Polygon definiert, das den relevanten Bildbereich (Region of Interest) abdeckt. Innerhalb dieser Region werden mithilfe eines Canny-Kantendetektors Konturen auf den Masken für Weiß (rechte Fahrbahnbegrenzung) und Gelb (linke Fahrbahnbegrenzung) extrahiert.
+
+Für jede Kontur wird deren Schwerpunkt ermittelt. Die äußerste linke und rechte Kante werden zur Berechnung eines mittigen Zielpunkts herangezogen. Eine Besonderheit ist die Filterung von Störkonturen, die in räumlicher Nähe zu erkannter Entenposition liegen. Diese werden durch Vergleich der x-Koordinaten mit dem Mittelwert erkannter Bounding Boxes und einer Toleranzschwelle ausgeschlossen.
+
+Je nach erkannter Konstellation erfolgt die Zielpunktberechnung durch:
+\begin{itemize}
+    \item Mittelwertbildung aus linker und rechter Kante, falls beide Linien sichtbar.
+    \item Zuschlag eines festen Offsets bei einseitiger Linienerkennung.
+\end{itemize}
+
+Der Zielpunkt \texttt{target\_x} wird über ein gleitendes Mittel aus mehreren Werten geglättet und anschließend publiziert. Im Debug-Modus wird der Punkt zudem visuell dargestellt und mit einem Marker im Kamerabild markiert.
+
+\subsection{Zusammenfassung}
+Die \texttt{camera\_reader\_node} bildet die zentrale Verarbeitungseinheit zur Extraktion fahrrelevanter Informationen aus dem Kamerabild. Durch Kombination klassischer Bildverarbeitung, heuristischer Filterung und definierter Geometrie gelingt eine robuste Spurdetektion in Echtzeit. Die publizierten Daten werden von nachgelagerten Modulen (z.\,B.\ Lane Controller) zur Steuerung der Bewegung verwendet.
 
 
 

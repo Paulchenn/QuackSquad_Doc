@@ -25,9 +25,25 @@ Ein weiteres Problem war die Integration der Node in das bestehende Steuerungssy
 In Abbildung \ref{fig:collision_avoidance_node} ist das Ablaufdiagramm der Collision Avoidance Node dargestellt. Die Node beginnt mit der Initialisierung der Sensoren und der ROS-Kommunikation. Anschließend wird in einer Endlosschleife kontinuierlich der Abstand zu Hindernissen vor dem Sensor gemessen. Wenn ein Hindernis in einem Bereich von 0,2 m bis 0,4 m erkannt wird, wird die Fahrtgeschwindigkeit reduziert, um das Hindernis langsam anzufahren. Kommt das Hindernis näher als 0,2 m hält der Duckiebot an, um eine Kollision zu vermeiden. Nach der Anpassung der Geschwindigkeit überwacht die Node weiterhin den Abstand um weiterfahren zu können, wenn das Hindernis nicht mehr im kritischen Erfassungsbereich ist.
 
 \section{Technische Umsetzung im Code}
-\sectionmark{Tech} % short form for headlines on pages
-% Beschreibung wie man es im Code umgesetzt hat
-Die Node subscribed die Abstandswerte des ToF-Sensor und verarbeitet diese in der Callback-Funktion. In einer run-Funktion wird der Abstandswert kontinuierlich überwacht und entsprechende Aktionen ausgelöst, wenn die definierten Schwellenwerte überschritten oder unterschritten werden. Die Node published den aktuellen Betriebsmodus des Duckiebots – „langsam“ oder „stop“ – zur weiteren Verarbeitung.
-Erkennt die Node kein Hindernis, wird keine Information veröffentlicht, sodass die Steuerungs-Node den Duckiebot mit voller Geschwindigkeit im Spurverfolgungsmodus weiterfahren lässt.
+\sectionmark{Tech}
 
-%% End of File %%
+Die Umsetzung der Kollisionsvermeidung basiert auf einer eigenständigen Node, die kontinuierlich den Abstand zu vorausliegenden Objekten misst und bei Bedarf entsprechende Steuerinformationen an das zentrale Kontrollsystem übermittelt (siehe Anhang, Listing~\ref{lst:tof_collision_avoidance_node}). Grundlage ist der am Duckiebot verbaute Time-of-Flight-Sensor (ToF), dessen Messdaten über das ROS-Topic \texttt{/front\_center\_tof\_driver\_node/range} bereitgestellt werden.
+
+\subsection{Abstandsverarbeitung}
+Nach dem Start initialisiert die Node die ROS-Kommunikation und subscribed auf das Topic des ToF-Sensors. Die empfangenen Abstands­werte werden innerhalb der Callback-Funktion \texttt{range\_callback} verarbeitet und in einer internen Variablen gespeichert. In der \texttt{run}-Schleife erfolgt dann eine kontinuierliche Auswertung dieser Daten mit einer Frequenz von 20\,Hz.
+
+Je nach gemessenem Abstand unterscheidet die Node drei Zustände:
+\begin{itemize}
+    \item \textbf{Abstand < 0{,}2\,m:} Eine unmittelbare Kollision droht. Es wird der Statuscode \texttt{3} (STOP) auf \texttt{/tof/avoidance/info} publiziert.
+    \item \textbf{Abstand zwischen 0{,}2\,m und 0{,}4\,m:} Ein kritischer Bereich ist erreicht. Der Duckiebot soll die Geschwindigkeit reduzieren. Es wird \texttt{1} (LANGSAM) publiziert.
+    \item \textbf{Abstand > 0{,}4\,m:} Keine Gefährdung erkannt. Es erfolgt kein Publish; dadurch verbleibt der Steuerstatus bei \texttt{0} (Normalbetrieb).
+\end{itemize}
+
+Die Zustandswerte werden über einen \texttt{Int32}-Publisher bereitgestellt. Der \texttt{switch\_control\_node} wertet diese Informationen in Kombination mit anderen Quellen aus und priorisiert den STOP-Befehl entsprechend gegenüber allen anderen Fahrmanövern.
+
+\subsection{Debugging und Systemintegration}
+Im Debug-Modus gibt die Node regelmäßig den aktuellen Sensorwert sowie den Status der Auswertung aus. Diese Funktionalität erleichterte die Parametrierung der Schwellwerte und die Nachvollziehbarkeit des Verhaltens.
+
+Besonderes Augenmerk lag auf der Integration der Node in das bestehende Steuerungssystem. Da sie nur dann publiziert, wenn ein kritischer Zustand erkannt wird, bleibt das System unempfindlich gegenüber gelegentlichen Fehlmessungen oder schwankenden Werten im unkritischen Bereich. Gleichzeitig ist die Reaktionszeit durch die hohe Ausführungsfrequenz gering genug, um auch bei schnellen Annäherungen an Hindernisse rechtzeitig zu reagieren.
+
+Die Verwendung von Standardnachrichten (z.\,B.\ \texttt{Int32} und \texttt{Range}) und die vollständige Kapselung der Logik innerhalb einer eigenständigen Node erleichtern die Wiederverwendbarkeit und zukünftige Erweiterung des Moduls.

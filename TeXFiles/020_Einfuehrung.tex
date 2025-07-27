@@ -33,7 +33,7 @@ robusten Interaktion zwischen System und Umgebung.
 Ziel dieses Berichts ist es, die technische Umsetzung der einzelnen Aufgaben nachzuvollziehen, verwendete 
 Methoden und Werkzeuge zu beschreiben und die Herausforderungen sowie Lösungsansätze aus fachlicher 
 Perspektive zu reflektieren. Darüber hinaus werden Erkenntnisse hinsichtlich der Systemarchitektur, der 
-Softwareentwicklung und der praxisorientierten Ausbildung im Bereich autonomer Robotik abgeleitet. 
+Softwareentwicklung und der praxisorientierten Ausbildung im Bereich autonomer Robotik abgeleitet.
 
 
 \section{Duckiebot und Duckietown}
@@ -131,6 +131,43 @@ Lösung geführt hat, einschließlich der getroffenen Entscheidungen und Überle
 Den Abschluss bildet eine Reflexion der Gruppe in Form eines Fazits zur gesamten Challenge sowie ein Ausblick, 
 der mögliche Erweiterungen oder alternative Lösungsansätze aufzeigt.
 
+\section{Zentrale Steuerstruktur und Priorisierung}
+\label{sec:ZentraleSteuerung}
+
+Um eine robuste und modulare Verarbeitung der Sensordaten sowie eine situationsabhängige Steuerentscheidung zu ermöglichen, wurde eine zentrale Steuerarchitektur entwickelt. Diese basiert auf einer prioritätsgesteuerten Entscheidungslogik, die in der \texttt{switch\_control\_node} implementiert ist. Die Node übernimmt die Aufgabe, aus mehreren potenziellen Steuerungsinformationen die jeweils relevanteste auszuwählen und zur Regelung an die \texttt{control\_lane\_node} weiterzuleiten.
+
+\subsection{Kommunikationsstruktur}
+Mehrere spezialisierte Nodes, darunter die \texttt{intersection\_handling\_node}, \texttt{bypass\_duckie\_node}, \texttt{collision\_avoidance\_node} und \texttt{parking\_node}, analysieren kontinuierlich das Umfeld des Fahrzeugs und liefern Informationen in Form von Zielkoordinaten (\texttt{target\_x}) sowie Steuerstatuscodes (\texttt{info}). Diese Daten werden über ROS-Topics publiziert und von der \texttt{switch\_control\_node} aggregiert.
+
+Die \texttt{switch\_control\_node} priorisiert diese Informationen gemäß eines festgelegten Regelwerks:
+\begin{itemize}
+    \item Höchste Priorität haben \texttt{STOP}-Signale (z.\,B.\ bei erkannter Stopplinie oder drohender Kollision).
+    \item Danach folgen spezifische Steuerungen wie Abbiegen, Hindernisumfahrung oder Parkvorgänge.
+    \item Falls keine besonderen Situationen erkannt werden, wird die normale Spurverfolgung aktiviert.
+\end{itemize}
+
+Auf Basis dieser Bewertung wählt die \texttt{switch\_control\_node} den aktuell gültigen \texttt{target\_x}-Wert aus und publiziert diesen auf dem Topic \texttt{/control/selected\_x}. Zusätzlich wird der aktuelle Steuerungsstatus als Ganzzahl (0--5) über \texttt{/switch/control} veröffentlicht.
+
+\begin{figure}[h]
+    \centering
+    %\includegraphics[width=0.85\textwidth]{Figures/png/switch_node_flow.png}
+    \caption{Steuerung und Priorisierung über die Switch Control Node}
+    \label{fig:switch_node_flow}
+\end{figure}
+
+\subsection{Regelung der Bewegung}
+Die \texttt{control\_lane\_node} empfängt die von der \texttt{switch\_control\_node} priorisierte Zielkoordinate \texttt{selected\_x} und setzt diese in eine Steuerbewegung um. Hierzu wird ein PID-Regler verwendet, der auf Basis des Fehlers zwischen Soll- und Ist-Position ein geeignetes Lenkmoment \texttt{omega} berechnet. Die Fahrgeschwindigkeit \texttt{v} wird situationsabhängig angepasst:
+\begin{itemize}
+    \item Bei normalen Bedingungen wird eine hohe Geschwindigkeit (\texttt{v\_max}) angestrebt.
+    \item In Situationen mit erhöhter Vorsicht (z.\,B.\ in Nähe von Objekten oder beim Abbiegen) wird automatisch auf eine reduzierte Geschwindigkeit (\texttt{v\_min}) gewechselt.
+\end{itemize}
+
+Zur Kommunikation mit der Fahrzeugsteuerung wird der berechnete Befehl als \texttt{Twist2DStamped}-Nachricht publiziert. Im Falle von STOP-Bedingungen wird der Bot durch mehrfache Null-Kommandos gezielt zum Stillstand gebracht.
+
+\subsection{Funktionale Übersicht}
+Die Kombination aus modularen Entscheidungsnodes und einer zentralen Schaltlogik ermöglicht eine adaptive Steuerung, die dynamisch auf Umweltveränderungen reagieren kann. Durch die explizite Priorisierung von Steuerinformationen wird verhindert, dass konkurrierende Befehle zu inkonsistentem Verhalten führen. Gleichzeitig bleibt das System durch die Entkopplung von Entscheidung und Regelung wartbar und erweiterbar.
+
+Die Architektur ist so ausgelegt, dass sie bei Bedarf um weitere Entscheidungs- oder Wahrnehmungs-Nodes ergänzt werden kann, ohne die bestehende Regelungslogik anpassen zu müssen. Dies trägt wesentlich zur Skalierbarkeit und Flexibilität des Gesamtsystems bei.
 
 
 %% End of File %%
