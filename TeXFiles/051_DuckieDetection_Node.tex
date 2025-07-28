@@ -74,6 +74,24 @@ Dieser Code wird von der \texttt{switch\_control\_node} ausgewertet und beeinflu
 \subsection{Visualisierung und Debug}
 Sowohl die \texttt{detect\_object\_node} als auch die \texttt{bypass\_duckie\_node} verfügen über Debug-Funktionen zur Visualisierung im Kamerabild. Hierbei werden erkannte Objekte farblich markiert und der berechnete Zielpunkt eingeblendet. Diese Funktionen erwiesen sich insbesondere während der Entwicklung und Parametrierung als hilfreich zur Analyse und Optimierung des Verhaltens.
 
+Abbildung~\ref{fig:duckie_detection_target} zeigt die Objekterkennung im rechten Sichtbereich mit einer zugehörigen Bounding Box, die durch das Label \texttt{duckie\_right} markiert ist. Aufgrund dieser Erkennung bleibt das System im Ausweichmodus aktiv.
+
+Abbildung~\ref{fig:bypass_target_active} visualisiert die resultierende Reaktion der Node: Ein alternativer Zielpunkt wird berechnet und ganz links im Bild (außerhalb der eigentlichen Spur) als \texttt{Bypass Target X} markiert. Dies dient der maximalen Vermeidung des Hindernisses und unterstreicht die Relevanz der kontinuierlichen Erkennung für ein stabiles Umfahrverhalten.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Figures/png/YOLO_Duckie.png}
+    \caption{Erkennung eines Duckies auf der rechten Spur mit \texttt{duckie\_right}-Label}
+    \label{fig:duckie_detection_target}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Figures/png/Bypass_Target_View.png}
+    \caption{Berechneter Zielpunkt im aktiven Ausweichmodus (\texttt{Bypass Target X})}
+    \label{fig:bypass_target_active}
+\end{figure}
+
 \subsection{Zusammenfassung}
 Die Hinderniserkennung und das Umfahrverhalten des Duckiebots basieren auf einer Kombination aus lernbasierter Objekterkennung, geometrischer Bereichsprüfung und zeitgesteuerter Bewegungskontrolle. Durch die klare Trennung zwischen Wahrnehmung und Entscheidungslogik kann die Funktionalität modular erweitert und systematisch getestet werden. Der entwickelte Ansatz erwies sich in der Praxis als zuverlässig und adaptiv gegenüber unterschiedlichen Positionen und Bewegungen der Hindernisse.
 

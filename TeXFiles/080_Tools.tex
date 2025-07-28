@@ -5,13 +5,37 @@ Zur erfolgreichen Umsetzung der verschiedenen Challenges im Rahmen des Projekts 
 
 \section{HSV-Kalibrierung}
 
-Ein zentrales Element der visuellen Spurverfolgung ist die zuverlässige Segmentierung der Fahrbahnmarkierungen in den Farben Weiß, Gelb und Rot. Diese basiert auf festen Schwellenwerten im HSV-Farbraum. Da die Lichtverhältnisse in der realen Umgebung stark variieren können, war eine manuelle Feinjustierung der Farbgrenzen erforderlich.
+Unterschiedliche Lichtverhältnisse, etwa durch Sonnenlicht, Schatten oder künstliche Beleuchtung, führten im Testumfeld regelmäßig dazu, dass die Fahrbahnmarkierungen nicht zuverlässig erkannt wurden. Um unter allen Bedingungen eine stabile Bildverarbeitung sicherzustellen, war daher vor jedem Arbeitstag eine Kalibrierung der Farbwerte erforderlich. Die hier eingesetzte Kalibrierungs-Node erleichterte diesen Vorgang erheblich und machte die Justierung der HSV-Werte effizient und wiederholbar.
 
-Die \texttt{white\_yellow\_red\_calibration\_node} stellte hierzu eine interaktive Kalibrierungsumgebung zur Verfügung. Über eine OpenCV-basierte Benutzeroberfläche konnten für jede der drei Farbklassen die sechs relevanten Parameter (Hue, Saturation, Value: jeweils untere und obere Grenze) per Trackbar in Echtzeit angepasst werden. Die betroffenen Bildbereiche wurden live eingefärbt dargestellt, sodass die Wirkung der Einstellungen unmittelbar visuell überprüft werden konnte.
+Die \texttt{white\_yellow\_red\_calibration\_node} stellte hierzu eine interaktive Kalibrierungsumgebung zur Verfügung. Über eine OpenCV-basierte Benutzeroberfläche konnten für jede der drei Farbklassen die sechs relevanten Parameter (Hue, Saturation, Value: jeweils untere und obere Grenze) per Trackbar in Echtzeit angepasst werden. Die betroffenen Bildbereiche wurden live eingefärbt dargestellt, sodass die Wirkung der Einstellungen unmittelbar überprüft werden konnte.
 
-Zusätzlich war ein Umschalten zwischen den drei Modi \texttt{white}, \texttt{gelb} und \texttt{red} möglich. Die jeweils gewählten Parameter wurden durch Drücken der Taste \texttt{s} in der zugehörigen YAML-Konfigurationsdatei persistiert und konnten somit direkt in der Laufzeitumgebung verwendet werden. Ein akustisches Feedbacksignal (Trigger auf \texttt{/play\_sound\_trigger}) unterstützte die Nutzerführung.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/png/Kalibrierung_weiß.png}
+    \caption{Kalibrierung der weißen Fahrbahnmarkierung bei hoher Helligkeit}
+    \label{fig:hsv_white}s
+\end{figure}
 
-Diese Node war insbesondere in der frühen Phase der Systementwicklung und bei wechselnden Lichtbedingungen ein unverzichtbares Werkzeug zur Sicherstellung einer robusten Farberkennung.
+Ein Modus-Switch ermöglichte das gezielte Umschalten zwischen den drei Farbklassen \texttt{white}, \texttt{gelb} und \texttt{red}. Die aktuell eingestellten Werte wurden bei Bedarf durch Tastendruck gespeichert und automatisch in der zugehörigen YAML-Konfigurationsdatei abgelegt, sodass sie zur Laufzeit direkt wiederverwendet werden konnten.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/png/Kalibrierung_gelb.png}
+    \caption{Kalibrierung der gelben Fahrbahnmarkierung mit optimierter Segmentierung}
+    \label{fig:hsv_yellow}
+\end{figure}
+
+Die Kalibrierung der roten Stopplinien war besonders sensibel, da eine robuste Unterscheidung von Hintergrundartefakten erforderlich war. Die korrekte Einstellung der HSV-Grenzen ermöglichte eine zuverlässige Detektion, wie in Abbildung~\ref{fig:hsv_red} zu sehen ist.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/png/Kalibrierung_rot.png}
+    \caption{Kalibrierung der roten Stopplinien mit zweigeteilter HSV-Maske}
+    \label{fig:hsv_red}
+\end{figure}
+
+Die \texttt{white\_yellow\_red\_calibration\_node} war somit ein essenzielles Werkzeug, um das System auf wechselnde Lichtbedingungen vorzubereiten und die Bildverarbeitung während der Entwicklung stabil zu halten.
+
 
 \section{Visuelle Kontrolle und Datensatzgenerierung}
 

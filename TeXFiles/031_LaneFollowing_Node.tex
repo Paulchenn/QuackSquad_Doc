@@ -71,6 +71,18 @@ Je nach erkannter Konstellation erfolgt die Zielpunktberechnung durch:
 
 Der Zielpunkt \texttt{target\_x} wird über ein gleitendes Mittel aus mehreren Werten geglättet und anschließend publiziert. Im Debug-Modus wird der Punkt zudem visuell dargestellt und mit einem Marker im Kamerabild markiert.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Figures/png/Bot_lane_following.png}
+    \caption{Visualisierung der Spurverfolgung mit erkannten Linien (grün/gelb) und Zielpunkt \texttt{target\_x} (magenta) in einer Linkskurve}
+    \label{fig:lane_following_debug}
+\end{figure}
+
+Abbildung~\ref{fig:lane_following_debug} zeigt die Debug-Ausgabe der \texttt{camera\_reader\_node} in einer Linkskurve. Die erkannte linke Linie (gelb) und rechte Linie (grün) werden visualisiert. Die Zielposition \texttt{target\_x} liegt deutlich links vom geometrischen Mittelpunkt (rot), da der Bot der Kurvengeometrie entsprechend ausgerichtet werden muss.
+
+
+Der Zielpunkt \texttt{target\_x} wird über ein gleitendes Mittel aus mehreren Werten geglättet und anschließend publiziert. Im Debug-Modus wird der Punkt zudem visuell dargestellt und mit einem Marker im Kamerabild markiert.
+
 \subsection{Zusammenfassung}
 Die \texttt{camera\_reader\_node} bildet die zentrale Verarbeitungseinheit zur Extraktion fahrrelevanter Informationen aus dem Kamerabild. Durch Kombination klassischer Bildverarbeitung, heuristischer Filterung und definierter Geometrie gelingt eine robuste Spurdetektion in Echtzeit. Die publizierten Daten werden von nachgelagerten Modulen (z.\,B.\ Lane Controller) zur Steuerung der Bewegung verwendet.
 

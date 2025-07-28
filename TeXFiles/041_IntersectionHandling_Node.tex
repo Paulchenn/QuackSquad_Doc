@@ -106,6 +106,24 @@ Das so berechnete \texttt{target\_x} stellt schließlich die Zielposition dar, d
 Bewegung des Fahrzeugs in die gewünschte Richtung einzuleiten. Diese Methode erlaubt eine flexible und 
 situationsabhängige Anpassung des Fahrverhaltens an die Position und Form der erkannten roten Linie im Bild.
 
+Zur Veranschaulichung zeigt Abbildung~\ref{fig:intersection_target_links} eine Beispielszene während eines Linksabbiegens. Der magentafarbene Punkt stellt den berechneten Zielpunkt \texttt{target\_x} dar, der auf Basis der erkannten roten Linie (links) sowie eines interpolierten Offsets berechnet wurde. Die gelben Rechtecke markieren dabei erkannte Stopplinien in den möglichen Fahrtrichtungen, während das magentafarbene Polygon die definierte Kreuzungsfläche kennzeichnet.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Figures/png/Bot_Kreuzung_links.png}
+    \caption{Berechnung des Zielpunkts \texttt{target\_x} für das Linksabbiegen (magenta)}
+    \label{fig:intersection_target_links}
+\end{figure}
+
+Ein weiterer Fall ist in Abbildung~\ref{fig:intersection_target_geradeaus} dargestellt. Hier wurde \enquote{geradeaus} als Fahrtrichtung gewählt. Der grüne Punkt kennzeichnet den dynamisch berechneten Zielpunkt, der sich an der unteren Kante der mittleren roten Kontur sowie der \texttt{y}-abhängigen Interpolation orientiert. Auch hier sind die relevanten Stopplinien in gelb sowie die Kreuzungsfläche eingezeichnet.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Figures/png/Bot_Kreuzung_geradeaus.png}
+    \caption{Berechnung des Zielpunkts \texttt{target\_x} für das Geradeausfahren (grün)}
+    \label{fig:intersection_target_geradeaus}
+\end{figure}
+
 Im Rahmen des Abbiegevorgangs wird zur besseren visuellen Rückmeldung ein LED-Blinksignal aktiviert, das die 
 gewählte Richtung anzeigt. Abhängig davon, ob das Fahrzeug nach links oder rechts abbiegt, werden unterschiedliche 
 LEDs auf der LED-Leiste in einem gelben Blinkmuster angesteuert. Die Blinkfrequenz beträgt dabei 2\,Hz, wodurch ein 

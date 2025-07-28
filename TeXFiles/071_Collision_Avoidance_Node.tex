@@ -1,13 +1,13 @@
 \section{Anforderungen und Herausforderungen}
 \sectionmark{Anf} % short form for headlines on pages
-% Gedankengang beschreiben
-% Wie sind wir zur Lösung gekommen?
-% Herausforderungen und Probleme nennen
-Um Kollisionen mit anderen Duckiebots zu vermeiden, wurde eine Node entwickelt, die auf Basis des, am Duckiebot eingebauten, \ac{ToF}-Sensors arbeitet. Diese Node ist dafür verantwortlich, den Abstand zu anderen Robotern zu messen und gegebenenfalls eine Korrektur der Fahrtrichtung bzw. der Fahrtgeschwindigkeit vorzunehmen.
 
-Eine zentrale Herausforderung bestand darin, zuverlässige Abstandsmessungen in Echtzeit zu gewährleisten, da der \ac{ToF}-Sensor durch Umgebungslicht, reflektierende Oberflächen und die Bewegung des Roboters beeinflusst werden kann. Außerdem musste die Hardware am Duckiebot überprüft werden, dass zuverlässige Daten gesendet werden. Die Node wurde so gestaltet, dass sie schnell genug auf erkannte Hindernisse reagiert, um eine Kollision sicher zu vermeiden, ohne dabei unnötig oft oder abrupt zu bremsen.
+Zur Vermeidung von Kollisionen mit anderen Duckiebots wurden zwei komplementäre Mechanismen implementiert: eine abstandsbasierte Erkennung über den eingebauten \ac{ToF}-Sensor sowie eine visuelle „Rechts vor Links“-Logik an Kreuzungen. Beide Komponenten arbeiten unabhängig, werden jedoch durch eine zentrale Steuerlogik priorisiert und koordiniert.
 
-Ein weiteres Problem war die Integration der Node in das bestehende Steuerungssystem des Duckiebots, sodass die Kollisionsvermeidung nahtlos mit anderen Fahrfunktionen zusammenarbeitet. Hierbei mussten Prioritäten zwischen verschiedenen Steuerbefehlen festgelegt und getestet werden, um ein sicheres und flüssiges Fahrverhalten zu gewährleisten.
+Die \ac{ToF}-basierte Erkennung ermöglicht die frühzeitige Reaktion auf sich nähernde Objekte im Frontbereich. Eine zentrale Herausforderung bestand dabei darin, zuverlässige Abstandsmessungen in Echtzeit zu gewährleisten, da der \ac{ToF}-Sensor durch Umgebungslicht, reflektierende Oberflächen und Fahrzeugbewegung beeinflusst werden kann. Zudem musste überprüft werden, ob die verbauten Sensoren fehlerfrei messen und korrekt im System eingebunden sind. Die resultierende Node wurde so gestaltet, dass sie schnell genug auf kritische Distanzen reagiert, ohne unnötig häufig oder abrupt zu bremsen.
+
+Parallel dazu wurde für das Verhalten an Kreuzungen eine visuelle Logik implementiert, die erkannte andere Duckiebots im Bild auswertet und in Kombination mit der gewählten Abbiegerichtung die „Rechts vor Links“-Regel durchsetzt. Diese Logik basiert auf Bounding Boxes, die durch ein Detektionsnetzwerk erzeugt und anschließend geometrisch ausgewertet werden. Hierbei war die Herausforderung, nur solche Objekte zu berücksichtigen, die sich tatsächlich auf der Kreuzungsfläche befinden oder in Konflikt mit der eigenen Route stehen.
+
+Die Kombination beider Konzepte stellte zusätzliche Anforderungen an die Integrationslogik: Der Duckiebot musste situationsabhängig korrekt priorisieren, ob ein Abbremsen aufgrund eines Hindernisses erforderlich ist oder ob an einer Kreuzung gewartet werden muss. Die daraus resultierende Steuerung ist reaktiv und robust gegenüber Einzelereignissen, da alle Nodes nach einem strikten Zeitfenster arbeiten und nur gültige sowie aktuelle Informationen an das zentrale Steuerungssystem übergeben.
 
 
 
@@ -27,9 +27,9 @@ In Abbildung~\ref{fig:collision_avoidance_node} ist das Ablaufdiagramm der Colli
 \section{Technische Umsetzung im Code}
 \sectionmark{Tech}
 
-Die Umsetzung der Kollisionsvermeidung basiert auf einer eigenständigen Node, die kontinuierlich den Abstand zu vorausliegenden Objekten misst und bei Bedarf entsprechende Steuerinformationen an das zentrale Kontrollsystem übermittelt (siehe~\cite{QuackSquad}, Funktion \texttt{tof\_collision\_avoidance\_node.py}). Grundlage ist der am Duckiebot verbaute \ac{ToF}-Sensor, dessen Messdaten über das \ac{ROS}-Topic \texttt{/front\_center\_tof\_driver\_node/range} bereitgestellt werden.
+Die Umsetzung der Kollisionsvermeidung basiert auf zwei eigenständigen Nodes, die jeweils unterschiedliche Aspekte des Szenarios abdecken: Die \texttt{tof\_collision\_avoidance\_node} reagiert auf unmittelbare Hindernisse im Frontbereich über einen \ac{ToF}-Sensor, während die \texttt{red\_line\_detector} zusätzlich die Regel „Rechts vor Links“ an Kreuzungen berücksichtigt und auf erkannte Duckiebots reagiert (siehe Anhang, Listings~\ref{lst:tof_collision_avoidance_node} und~\ref{lst:red_line_detector}).
 
-\subsection{Abstandsverarbeitung}
+\subsection{Abstandsbasierte Erkennung mit ToF-Sensor}
 Nach dem Start initialisiert die Node die ROS-Kommunikation und subscribed auf das Topic des \ac{ToF}-Sensors. Die empfangenen Abstands­werte werden innerhalb der Callback-Funktion \texttt{range\_callback} verarbeitet und in einer internen Variablen gespeichert. In der \texttt{run}-Schleife erfolgt dann eine kontinuierliche Auswertung dieser Daten mit einer Frequenz von 20\,Hz.
 
 Je nach gemessenem Abstand unterscheidet die Node drei Zustände:
@@ -39,11 +39,41 @@ Je nach gemessenem Abstand unterscheidet die Node drei Zustände:
     \item \textbf{Abstand > 0{,}4\,m:} Keine Gefährdung erkannt. Es erfolgt kein Publish; dadurch verbleibt der Steuerstatus bei \texttt{0} (Normalbetrieb).
 \end{itemize}
 
-Die Zustandswerte werden über einen \texttt{Int32}-Publisher bereitgestellt. Der \texttt{switch\_control\_node} wertet diese Informationen in Kombination mit anderen Quellen aus und priorisiert den STOPP-Befehl entsprechend gegenüber allen anderen Fahrmanövern.
+Die Zustandswerte werden über einen \texttt{Int32}-Publisher bereitgestellt. Der \texttt{switch\_control\_node} wertet diese Informationen gemeinsam mit weiteren Quellen aus und priorisiert den STOPP-Befehl entsprechend gegenüber allen anderen Fahrmanövern.
 
-\subsection{Debugging und Systemintegration}
-Im Debug-Modus gibt die Node regelmäßig den aktuellen Sensorwert sowie den Status der Auswertung aus. Diese Funktionalität erleichterte die Parametrierung der Schwellwerte und die Nachvollziehbarkeit des Verhaltens.
+\subsection{Rechts-vor-Links-Logik an Kreuzungen}
 
-Besonderes Augenmerk lag auf der Integration der Node in das bestehende Steuerungssystem. Da sie nur dann publiziert, wenn ein kritischer Zustand erkannt wird, bleibt das System unempfindlich gegenüber gelegentlichen Fehlmessungen oder schwankenden Werten im unkritischen Bereich. Gleichzeitig ist die Reaktionszeit durch die hohe Ausführungsfrequenz gering genug, um auch bei schnellen Annäherungen an Hindernisse rechtzeitig zu reagieren.
+Zusätzlich zur sensorbasierten Kollisionsvermeidung wurde für das sichere Verhalten an Kreuzungen eine dedizierte Logik nach dem Prinzip \textit{„Rechts vor Links“} implementiert. Diese Funktionalität ist Teil der Intersection Handling Node und greift immer dann, wenn der Duckiebot an einer roten Stopplinie anhält und anschließend abbiegen oder geradeaus weiterfahren möchte. 
 
-Die Verwendung von Standardnachrichten (z.\,B.\ \texttt{Int32} und \texttt{Range}) und die vollständige Kapselung der Logik innerhalb einer eigenständigen Node erleichtern die Wiederverwendbarkeit und zukünftige Erweiterung des Moduls.
+Die Entscheidungsfindung erfolgt dabei in mehreren Stufen:
+\begin{itemize}
+    \item Zunächst wird mittels Bildverarbeitung überprüft, ob ein roter Streifen im unteren Bildbereich detektiert wurde (Stoppbedingung).
+    \item In einer Wartephase von sieben Sekunden identifiziert die Node mithilfe von YOLO-basierter Objekterkennung andere Duckiebots im Kamerabild.
+    \item In Abhängigkeit von der gewählten Fahrtrichtung (\texttt{links}, \texttt{rechts}, \texttt{geradeaus}) wird geprüft, ob ein anderer Bot die Vorfahrt hat:
+    \begin{itemize}
+        \item Für \textbf{Rechtsabbiegen} gilt: kein Bot auf der Kreuzung → Fahrt erlaubt.
+        \item Für \textbf{Geradeausfahrt}: kein Bot von rechts oder auf der Kreuzung.
+        \item Für \textbf{Linksabbiegen}: kein Bot von rechts oder gegenüber oder auf der Kreuzung.
+    \end{itemize}
+    \item Sobald die Bedingungen erfüllt sind, wird der Abbiegevorgang eingeleitet und der entsprechende \texttt{target\_x}-Wert publiziert.
+\end{itemize}
+
+Diese Logik greift damit die aus dem Straßenverkehr bekannte Vorfahrtsregel auf und verhindert zuverlässig gefährliche Situationen bei Kreuzungen mit anderen Duckiebots. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/png/Bot_auf_Kreuzung.png}
+    \caption{Intersection-Node: Bot bereits auf der Kreuzung erkannt (lila Fläche), Abbiegevorgang verzögert}
+    \label{fig:intersection_conflict}
+\end{figure}
+
+Abbildung~\ref{fig:intersection_conflict} zeigt eine Situation, in der ein anderer Duckiebot bereits die Kreuzungsfläche belegt (rot umrandet, innerhalb des lilafarbenen Polygons). Die eigene Intersection-Node erkennt dies und verhindert das Abbiegen, bis die Fläche wieder frei ist.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/png/Bot_geradeaus_rechts.png}
+    \caption{Intersection-Node: Bot gegenüber und rechts erkannt, Abbiegevorgang (links) verzögert}
+    \label{fig:intersection_yield}
+\end{figure}
+
+In Abbildung~\ref{fig:intersection_yield} befindet sich der eigene Duckiebot an der Stopplinie und möchte links abbiegen. Die Logik erkennt jedoch einen Bot rechts sowie einen gegenüber (beide rot umrandet) und wartet entsprechend, bis diese keine Vorfahrt mehr haben. Die gelben Kästen markieren die erkannten roten Fahrbahnmarkierungen, welche zur Richtungsauswahl dienen.
