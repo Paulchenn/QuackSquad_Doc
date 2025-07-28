@@ -1,0 +1,96 @@
+\chapter{Objekterkennung}
+\label{ch:Objekterkennung}
+\sectionmark{Objekt}
+
+Die Objekterkennung spielt eine fundamentale Rolle für die autonome Navigation des Duckiebots, da sie die Wahrnehmung relevanter Objekte in der Umgebung ermöglicht. Im Rahmen dieses Projekts wurde ein vortrainiertes YOLOv8n-Modell (You Only Look Once, Version 8 nano) eingesetzt, um verschiedene Objektklassen in Echtzeit zu identifizieren und deren Position im Kamerabild zu lokalisieren. Dieses Modell wurde in der \texttt{detect\_object\_node} implementiert und lieferte die Grundlage für die Entscheidungsfindung in mehreren nachfolgenden Herausforderungen.
+
+\section{YOLOv8n und die \texttt{detect\_object\_node}}
+\sectionmark{YOLOv8n}
+
+YOLOv8n ist eine \ac{CNN}-Architektur, die für ihre hohe Geschwindigkeit und Genauigkeit bei der Objektdetektion bekannt ist. Das \enquote{nano}-Modell zeichnet sich durch seine geringe Größe und Effizienz aus, was es ideal für den Einsatz auf ressourcenbeschränkten Systemen wie dem Duckiebot macht. Das Modell wurde auf einem Datensatz trainiert, der spezifische Duckietown-Objekte wie \enquote{Duckies} (Enten), \enquote{Duckiebots} (andere Fahrzeuge) sowie \enquote{freeSlot} und \enquote{occupiedSlot} (freie und belegte Parklücken) umfasste.
+
+Die \texttt{detect\_object\_node} ist die zentrale Komponente, die für die Verarbeitung der Kamerabilder und die Anwendung des YOLOv8n-Modells zuständig ist. Ihr grundlegender Ablauf ist in Abbildung~\ref{fig:object_detection_flow} dargestellt. Sie abonniert die komprimierten Kamerabilder des Topics \texttt{/{\_vehicle\_name}/camera\_node/image/compressed} und führt folgende Schritte aus:
+\begin{enumerate}
+    \item \textbf{Dekompression und Vorverarbeitung:} Das empfangene komprimierte Bild wird in ein OpenCV-Format dekomprimiert und für die Eingabe in das neuronale Netzwerk vorbereitet (z.B. Skalierung, Normalisierung).
+    \item \textbf{Inferenz mit YOLOv8n:} Das vorverarbeitete Bild wird dem YOLOv8n-Modell zugeführt, welches die Objekte im Bild detektiert und für jedes erkannte Objekt eine Bounding Box (Koordinate $x_1, y_1, x_2, y_2$), eine Konfidenzbewertung und eine Klassenzugehörigkeit (z.B. \enquote{Duckies}, \enquote{Duckiebots}, \enquote{freeSlot}, \enquote{occupiedSlot}) ausgibt.
+    \item \textbf{Filterung und Verarbeitung der Ergebnisse:} Die detektierten Bounding Boxes werden gefiltert, um Duplikate zu entfernen oder Objekte mit geringer Konfidenz zu ignorieren. Die Node ist so konfiguriert, dass sie nur das vorderste und größte Objekt einer relevanten Klasse berücksichtigt, um eine konsistente Steuerung zu gewährleisten.
+    \item \textbf{Publikation der Ergebnisse:} Die Informationen der erkannten Objekte werden über spezifische ROS-Topics veröffentlicht, sodass andere Nodes im System darauf zugreifen und ihre Entscheidungen basierend auf diesen Daten treffen können:
+    \begin{itemize}
+        \item \textbf{/{\_vehicle\_name}/detect/object/obstacle\_distance}: Veröffentlicht den Abstand zu einem erkannten Hindernis (typischerweise der mittlere Y-Wert der Bounding Box).
+        \item \textbf{/{\_vehicle\_name}/detect/object/parkingBB}: Bounding Box der nächstgelegenen freien Parklücke.
+        \item \textbf{/{\_vehicle\_name}/detect/object/parkingOccupiedBB}: Bounding Box der nächstgelegenen belegten Parklücke.
+        \item \textbf{/{\_vehicle\_name}/detect/object/duckiebotBB}: Bounding Box des nächstgelegenen anderen Duckiebots.
+        \item \textbf{/{\_vehicle\_name}/detect/object/image}: Optional ein annotiertes Bild mit den erkannten Bounding Boxes und Klassennamen zu Debugging-Zwecken.
+    \end{itemize}
+\end{enumerate}
+
+Die Robustheit der Objektdetektion wurde durch die Mittelwertbildung von Bounding-Box-Koordinaten über mehrere aufeinanderfolgende Frames verbessert. Dies reduzierte das Rauschen und die Auswirkungen einzelner fehlerhafter Detektionen, was zu einer stabileren Grundlage für die Verhaltenssteuerung führte. Die Implementierung dieser Node ermöglichte eine vielseitige Objekterkennung, die für verschiedene autonome Manöver des Duckiebots essenziell war.
+
+\section{Ablaufdiagramm der Objekterkennung}
+\label{sec:object_detection_flow}
+\sectionmark{Ablauf}
+
+Das folgende Ablaufdiagramm in Abbildung~\ref{fig:object_detection_flow} illustriert den internen Prozess der \texttt{detect\_object\_node}.
+
+\begin{figure}[H]
+    \centering
+    % BITTE HIER DEIN ABLAUFDIAGRAMM EINFÜGEN!
+    % Beispiel: \includegraphics[width=0.8\textwidth]{Figures/png/Ablaufdiagramm_DetectObjectNode.drawio.png}
+    \caption{Ablaufdiagramm der Detect Object Node}
+    \label{fig:object_detection_flow}
+\end{figure}
+
+Die Node beginnt mit der Initialisierung der ROS-Kommunikation und dem Laden des vortrainierten YOLOv8n-Modells. In einer Endlosschleife wird kontinuierlich auf neue Kamerabilder gewartet. Sobald ein Bild empfangen wird, wird es dekomprimiert und an das YOLO-Modell übergeben. Die vom Modell zurückgegebenen Detektionen (Bounding Boxes, Konfidenzen, Klassen) werden anschließend verarbeitet. Hierbei werden nicht relevante Detektionen (z.B. zu geringe Konfidenz) gefiltert und die relevantesten Objekte (z.B. der nächste Duckie, der nächste freie Parkplatz) für jede Objektklasse identifiziert. Diese Informationen werden dann über dedizierte ROS-Topics an andere Nodes im System veröffentlicht, um dort für Steuerungsentscheidungen genutzt zu werden. Optional kann auch ein visualisiertes Bild mit den Bounding Boxes zur Fehlerbehebung ausgegeben werden.
+
+\section{Technische Umsetzung im Code}
+\label{sec:object_detection_code}
+\sectionmark{Code}
+
+Die \texttt{detect\_object\_node} ist die primäre Implementierung der Objekterkennung. Der vollständige Python-Code kann~\cite{QuackSquad}, Funktion \texttt{detect\_object\_node.py} eingesehen werden.
+
+\subsection{Initialisierung und Konfiguration}
+Beim Start der Node werden grundlegende ROS-Kommunikationsmittel und Parameter initialisiert. Dazu gehören die Initialisierung der \texttt{DTROS}-Node und des Fahrzeugnamens, das Laden der YOLOv8-Modellgewichte und die Festlegung von Konfidenzschwellen sowie Filterkonfigurationen. Zudem werden Publisher für die verschiedenen Bounding Box-Informationen (z.B. \texttt{duckieNearestBB}, \texttt{parkingBB}, \texttt{duckiebotBB}) sowie ein optionaler Publisher für das annotierte Debug-Bild eingerichtet. Ein Subscriber für komprimierte Kamerabilder (\texttt{camera\_node/image/compressed}) wird registriert. Zur Begrenzung der Suchbereiche für bestimmte Objekttypen im Bild werden Polygone (\texttt{duckie\_mask}, \texttt{bot\_mask}, \texttt{parking\_mask}) definiert, um Fehlalarme zu reduzieren und die Relevanz der Detektionen zu erhöhen.
+
+\subsection{Bild- und Objekterkennungsprozess}
+Die zentrale Logik findet in der \texttt{cbImage}-Callback-Funktion statt, die bei jedem neuen Kamerabild aufgerufen wird. Zunächst wird das komprimierte Bild in ein OpenCV-Format konvertiert. Anschließend führt das YOLOv8-Modell die Objektdetektion durch. Die Ergebnisse, die Bounding Boxes, Konfidenzwerte und Klassenzugehörigkeiten enthalten, werden umfassend verarbeitet und gefiltert. Dies beinhaltet das Herausfiltern von Detektionen mit geringer Konfidenz oder solchen, die außerhalb der vordefinierten regionalen Masken liegen. Für jede relevante Objektklasse wird die wichtigste Bounding Box (z.B. der nächste Duckie oder der nächste freie Parkplatz) identifiziert und deren Koordinaten als \texttt{Float64MultiArray}-Nachrichten auf den jeweiligen ROS-Topics publiziert. Bei aktiviertem Debug-Modus wird zudem ein annotiertes Bild mit den erkannten Bounding Boxes zur visuellen Überprüfung veröffentlicht.
+
+\subsection{Robustheitsmaßnahmen}
+Um die Zuverlässigkeit der Objekterkennung unter realen Bedingungen zu verbessern, wurden mehrere Maßnahmen implementiert. Konfidenzschwellen stellen sicher, dass nur Detektionen mit hoher Wahrscheinlichkeit berücksichtigt werden. Regionale Masken (Region of Interest - ROI) verhindern Fehlalarme durch irrelevante Objekte außerhalb der Fahr- oder Parkbereiche. Des Weiteren wird die Stabilität der Detektion durch die Nachverfolgung der wichtigsten Bounding Boxes über mehrere Frames hinweg gewährleistet, was kurzzeitige Aussetzer der Detektion abfängt und ein ruhigeres Systemverhalten ermöglicht.
+
+Die \texttt{detect\_object\_node} stellt somit eine leistungsfähige und flexible Komponente dar, die andere Module des Duckiebot-Systems mit essenziellen Informationen über die Umgebung versorgt und die Grundlage für komplexere Navigationsentscheidungen bildet.
+
+\section{Modellbewertung und Ergebnisse}
+
+Die Leistungsfähigkeit des entwickelten Modells wurde anhand verschiedener Metriken umfassend evaluiert. Die \textbf{Konfusionsmatrix} (siehe Abbildung \ref{fig:confusion_matrix}) bietet einen detaillierten Einblick in die Klassifikationsgenauigkeit, indem sie die Anzahl der korrekt und inkorrekt klassifizierten Instanzen pro Klasse darstellt.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/png/confusion_matrix.png}
+    \caption{Konfusionsmatrix der Modellklassifikation.}
+    \label{fig:confusion_matrix}
+\end{figure}
+
+Ergänzend zur Konfusionsmatrix wurden die \textbf{Precision-Recall (PR)-Kurve} und die \textbf{ROC-Kurve} (Receiver Operating Characteristic) analysiert. Die \textbf{PR-Kurve} (Abbildung \ref{fig:pr_curve}) ist besonders relevant für unbalancierte Datensätze und visualisiert den Trade-off zwischen Precision und Recall bei verschiedenen Schwellenwerten. Eine hohe Fläche unter der PR-Kurve deutet auf eine gute Leistung hin, insbesondere bei der Erkennung der positiven Klasse. Die \textbf{ROC-Kurve} (Abbildung \ref{fig:roc_curve}) hingegen zeigt das Verhältnis von True Positive Rate (Recall) zu False Positive Rate über alle möglichen Klassifikationsschwellen hinweg und ist ein Standardmaß für die Gesamtleistung des Klassifikators.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/png/PR_curve.png}
+    \caption{Precision-Recall-Kurve des Modells.}
+    \label{fig:pr_curve}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/png/R_curve.png} % Annahme, dass R-Kurve die ROC-Kurve ist
+    \caption{ROC-Kurve des Modells.}
+    \label{fig:roc_curve}
+\end{figure}
+
+Die aggregierten numerischen \textbf{Ergebnisse} der Modellbewertung, einschließlich wichtiger Metriken wie Accuracy, Precision, Recall und F1-Score, sind in Abbildung \ref{fig:results_metrics} zusammengefasst. Diese Metriken geben einen quantitativen Überblick über die Güte des Modells und ermöglichen einen direkten Vergleich mit anderen Ansätzen.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/png/results.png} % Annahme, dass 'results' ein Bild mit den numerischen Metriken ist
+    \caption{Zusammenfassung der quantitativen Bewertungsmetriken.}
+    \label{fig:results_metrics}
+\end{figure}
