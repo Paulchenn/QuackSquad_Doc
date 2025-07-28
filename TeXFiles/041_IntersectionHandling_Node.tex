@@ -76,7 +76,7 @@ umgewandelt wird. Zur Detektion von Rot werden zwei \ac{HSV}-Bereiche abgedeckt 
 werden. Diese hebt alle roten Bildbereiche hervor. Mit der OpenCV-Funktion \texttt{findContours} werden daraufhin alle 
 zusammenhängenden roten Flächen über einen gewissen Schwellenwert ermittelt. Kleine, zufällige Flächen werden dabei ignoriert. Zur Lokalisierung der 
 roten Linie wird die \texttt{y}-Position der tiefsten Kontur verwendet: Liegt diese unterhalb eines bestimmten 
-Schwellenwertes im Bild, wird davon ausgegangen, dass sich das Fahrzeug unmittelbar vor einer roten Linie befindet.
+Schwellenwertes im Bild, wird davon ausgegangen, dass sich das Fahrzeug unmittelbar vor einer roten Linie befindet (siehe~\cite{QuackSquad}, Funktion \texttt{intersection\_handling\_node.py}).
 
 Die möglichen Abbiegemöglichkeiten werden anhand der \texttt{x}-Positionen der roten Konturen analysiert. Das Bild wird 
 dafür in drei vertikale Zonen unterteilt: links, Mitte (geradeaus) und rechts. Alle Konturen oberhalb eines 
@@ -121,7 +121,7 @@ Fahrzeuge (z.B. rechts oder im Gegenverkehr) erkannt wurden. Nur wenn die Kreuzu
 der Abbiegevorgang.
 
 Anschließend kehrt das System in den normalen Fahrmodus zurück, setzt die Spurverfolgung fort und wartet auf 
-die Erkennung der nächsten roten Linie
+die Erkennung der nächsten roten Linie.
 
 
 

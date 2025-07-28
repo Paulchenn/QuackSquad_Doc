@@ -17,7 +17,7 @@ Ein weiteres Problem war die Integration der Node in das bestehende Steuerungssy
 % Ablaufdiagramm und Beschreibung der Node
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{Figures/png/Ablaufdiagramme_Bericht-Collision_Avoidance.drawio.png}
+    \includegraphics[width=0.6\textwidth]{Figures/png/Ablaufdiagramme_Bericht-Collision_Avoidance.drawio.png}
     \caption{Ablaufdiagramm der Collision Avoidance Node}
     \label{fig:collision_avoidance_node}
 \end{figure}
@@ -27,7 +27,7 @@ In Abbildung~\ref{fig:collision_avoidance_node} ist das Ablaufdiagramm der Colli
 \section{Technische Umsetzung im Code}
 \sectionmark{Tech}
 
-Die Umsetzung der Kollisionsvermeidung basiert auf einer eigenständigen Node, die kontinuierlich den Abstand zu vorausliegenden Objekten misst und bei Bedarf entsprechende Steuerinformationen an das zentrale Kontrollsystem übermittelt (siehe Anhang, Listing~\ref{lst:tof_collision_avoidance_node}). Grundlage ist der am Duckiebot verbaute \ac{ToF}-Sensor, dessen Messdaten über das ROS-Topic \texttt{/front\_center\_tof\_driver\_node/range} bereitgestellt werden.
+Die Umsetzung der Kollisionsvermeidung basiert auf einer eigenständigen Node, die kontinuierlich den Abstand zu vorausliegenden Objekten misst und bei Bedarf entsprechende Steuerinformationen an das zentrale Kontrollsystem übermittelt (siehe~\cite{QuackSquad}, Funktion \texttt{tof\_collision\_avoidance\_node.py}). Grundlage ist der am Duckiebot verbaute \ac{ToF}-Sensor, dessen Messdaten über das \ac{ROS}-Topic \texttt{/front\_center\_tof\_driver\_node/range} bereitgestellt werden.
 
 \subsection{Abstandsverarbeitung}
 Nach dem Start initialisiert die Node die ROS-Kommunikation und subscribed auf das Topic des \ac{ToF}-Sensors. Die empfangenen Abstands­werte werden innerhalb der Callback-Funktion \texttt{range\_callback} verarbeitet und in einer internen Variablen gespeichert. In der \texttt{run}-Schleife erfolgt dann eine kontinuierliche Auswertung dieser Daten mit einer Frequenz von 20\,Hz.

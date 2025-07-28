@@ -59,7 +59,9 @@ Die technische Realisierung des Parkmanövers erfolgt hauptsächlich durch die \
 
 
 \subsection{Parklückenerkennung und -auswahl}
-Die \texttt{parking\_node} abonniert die \ac{ROS}-Topics \texttt{/detect/object/parkingBB} und \texttt{/detect/object/parkingOccupiedBB}, die von der \texttt{detect\_object\_node} (wie in Kapitel~\ref{ch:Challenge_2} beschrieben) mit Bounding Boxes erkannter Parklücken beliefert werden. Diese Bounding Boxes enthalten die visuellen Koordinaten der Parklücken im Kamerabild. Die \texttt{parking\_node} entscheidet basierend auf der veröffentlichten Klassifizierung (\enquote{free} oder \enquote{occupied}) und der zeitlichen Gültigkeit (time\_lastFree, time\_lastOccupied) über die Eignung eines Parkplatzes. Ein Parkvorgang wird nur eingeleitet, wenn eine freie Parklücke erkannt wird und sich diese in einem definierten Bereich des Kamerabildes befindet (durch die Parameter \texttt{xForSlowDrive} und \texttt{yForSlowDrive} in der YAML-Konfiguration festgelegt).
+Die \texttt{parking\_node} abonniert die \ac{ROS}-Topics \texttt{/detect/object/parkingBB} und \texttt{/detect/object/parkingOccupiedBB}. 
+Diese werden von der zentralen Objekterkennungs-Node (siehe Kapitel~\ref{ch:Objekterkennung}) mit Bounding Boxes (visuellen Koordinaten der Parklücken im Kamerabild) erkannter Parklücken beliefert.
+Die \texttt{parking\_node} entscheidet basierend auf der veröffentlichten Klassifizierung (\enquote{free} oder \enquote{occupied}) und der zeitlichen Gültigkeit (time\_lastFree, time\_lastOccupied) über die Eignung eines Parkplatzes. Ein Parkvorgang wird nur eingeleitet, wenn eine freie Parklücke erkannt wird und sich diese in einem definierten Bereich des Kamerabildes befindet (durch die Parameter \texttt{xForSlowDrive} und \texttt{yForSlowDrive} in der YAML-Konfiguration festgelegt).
 
 \newpage
 

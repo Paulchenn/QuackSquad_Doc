@@ -28,7 +28,7 @@ Zur technischen Umsetzung kamen verschiedene Tools zum Einsatz, unter anderem da
 Docker, Git und die Duckietown-Shell. Die Entwicklungsumgebung basierte auf einem Ubuntu-System und erforderte
 grundlegende Kenntnisse im Umgang mit der Kommandozeile und Containervirtualisierung. Neben dem technischen 
 Know-how lag ein weiterer Fokus auf der Modularisierung der Software, der Analyse von Sensordaten sowie der 
-robusten Interaktion zwischen System und Umgebung. 
+robusten Interaktion zwischen System und Umgebung. Der vollständige Code des Projekts ist in einem öffentlichen Git-Repository verfügbar und kann unter \url{https://github.com/Paulchenn/QuackSquad.git} eingesehen werden.
 
 Ziel dieses Berichts ist es, die technische Umsetzung der einzelnen Aufgaben nachzuvollziehen, verwendete 
 Methoden und Werkzeuge zu beschreiben und die Herausforderungen sowie Lösungsansätze aus fachlicher 
@@ -69,12 +69,12 @@ inertiale Messeinheit, die Bewegungs- und Lagedaten liefert, sowie einen \ac{ToF
 Distanzmessung. Hall-Sensoren an den Rädern ermöglichen eine präzise Bewegungskontrolle. Die Verarbeitung 
 dieser Daten übernimmt ein NVIDIA Jetson Nano mit 4\,GB\,RAM. Das Betriebssystem sowie die benötigte Software 
 sind auf einer 64\,GB microSD-Karte gespeichert. Gesteuert wird der Duckiebot mit \ac{ROS}, das in Docker-Containern 
-ausgeführt wird. Dies sorgt für eine einheitliche, reproduzierbare Entwicklungsumgebung ?? QUELLE ??. 
+ausgeführt wird. Dies sorgt für eine einheitliche, reproduzierbare Entwicklungsumgebung~\cite{Duckietown_Daffy_Docs}. 
 
 Die Stromversorgung erfolgt über eine spezielle Duckiebattery mit 10\,Ah Kapazität, die über USB-Anschlüsse mit 
 der zentralen Elektronikplatine, dem sogenannten \ac{HUT}, verbunden ist. Diese Platine 
 koordiniert sämtliche Ein- und Ausgänge der Sensoren, Motoren und weiteren Peripheriegeräte. Für grundlegende 
-Benutzerinteraktionen verfügt der Roboter über ein kleines Display und einen physischen Knopf auf dem oberen Deck ?? QUELLE ??.
+Benutzerinteraktionen verfügt der Roboter über ein kleines Display und einen physischen Knopf auf dem oberen Deck~\cite{Duckietown_Daffy_Docs}.
 
 \newpage
 
@@ -89,7 +89,7 @@ Markierungen versehen, die für die Navigation essenziell sind:
     \item rote Streifen zeigen Stopplinien an.
 \end{itemize}
 Die gesamte Umgebung kann digital beschrieben und in der Simulationsumgebung Duckietown Gym nachgebildet werden, was eine vorherige 
-virtuelle Erprobung der entwickelten Software ermöglicht ?? QUELLE ??.
+virtuelle Erprobung der entwickelten Software ermöglicht~\cite{Duckietown_Daffy_Docs}.
 
 \begin{figure}[h]  % h = here (Platzierung)
     \centering
@@ -104,26 +104,23 @@ Eine weitere visuelle Ebene in Duckietown stellen die Verkehrszeichen dar. Diese
 Symbole auf Folien direkt auf die Kacheln gelegt und sind so platziert, dass sie zuverlässig im Sichtfeld 
 der Frontkamera erscheinen. Die Erkennung erfolgt über klassische Bildverarbeitung oder lernbasierte Methoden. 
 Hinzu kommen modulare Parkbereiche, die typischerweise aus zwei Kacheln bestehen und mit gestrichelten Linien 
-als Parkzone ausgewiesen  ?? QUELLE ??. 
+als Parkzone ausgewiesen ~\cite{Duckietown_Daffy_Docs}. 
 
 Ein besonderes Merkmal von Duckietown ist die didaktische Struktur. Studierende arbeiten schrittweise an 
 Aufgaben wie Linienverfolgung, Interpretation von Kreuzungen, Hindernisvermeidung und Koordination mehrerer 
 Roboter. Gleichzeitig lernen sie den Umgang mit moderner Softwareentwicklung: Versionierung mit Git, Arbeiten 
 mit Containern, Kommandozeilenwerkzeuge und modulare Programmarchitektur. Dabei entsteht ein praxisnahes 
 Verständnis dafür, wie autonome Systeme durch das Zusammenspiel von Hardware, Sensorik, Software und 
-Testumgebung zuverlässig funktionieren ?? QUELLE ??. 
+Testumgebung zuverlässig funktionieren~\cite{Duckietown_Daffy_Docs}. 
 
 Insgesamt stellt Duckietown eine effektive und anschauliche Plattform dar, um theoretische Grundlagen der 
 Robotik mit praktischer Erfahrung zu verknüpfen. Die Kombination aus realer Hardware, standardisierter 
 Umgebung und didaktisch aufbereiteter Software schafft ideale Voraussetzungen für die Ausbildung im Bereich 
-intelligenter Transportsysteme und autonomer Robotik ?? QUELLE ??. 
+intelligenter Transportsysteme und autonomer Robotik~\cite{Duckietown_Daffy_Docs}. 
 
 
 \section{Aufbau der Arbeit}
 \label{sec:Aufbau der Arbeit}
-
-?? NOCH ANPASSEN WENN SICH WAS ÄNDERT! ??
-
 Der vorliegende Projektbericht ist in mehrere Kapitel gegliedert, die jeweils eine der aufeinander 
 aufbauenden Challenges beschreiben. Jedes Kapitel beginnt mit einer grundlegenden Einführung in die 
 jeweilige Aufgabenstellung. Dann werden erste Überlegungen und die Herausforderungen beschrieben.
