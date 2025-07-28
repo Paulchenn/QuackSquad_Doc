@@ -3,7 +3,7 @@
 
 Zur erfolgreichen Umsetzung der verschiedenen Challenges im Rahmen des Projekts kamen zwei eigenständig entwickelte Tools zum Einsatz, die gezielt zur Kalibrierung, Analyse und Datenerhebung dienten. Beide Nodes erleichterten die Entwicklung und Optimierung der Bildverarbeitung erheblich und ermöglichten eine praxisnahe Justierung des Systems.
 
-\section{HSV-Kalibrierung mit der \texttt{white\_yellow\_red\_calibration\_node}}
+\section{HSV-Kalibrierung}
 
 Ein zentrales Element der visuellen Spurverfolgung ist die zuverlässige Segmentierung der Fahrbahnmarkierungen in den Farben Weiß, Gelb und Rot. Diese basiert auf festen Schwellenwerten im HSV-Farbraum. Da die Lichtverhältnisse in der realen Umgebung stark variieren können, war eine manuelle Feinjustierung der Farbgrenzen erforderlich.
 
@@ -13,13 +13,22 @@ Zusätzlich war ein Umschalten zwischen den drei Modi \texttt{white}, \texttt{ge
 
 Diese Node war insbesondere in der frühen Phase der Systementwicklung und bei wechselnden Lichtbedingungen ein unverzichtbares Werkzeug zur Sicherstellung einer robusten Farberkennung.
 
-\section{Visuelle Kontrolle und Datensatzgenerierung mit der \texttt{display\_and\_save\_cameraImg\_node}}
+\section{Visuelle Kontrolle und Datensatzgenerierung}
 
-Für die Entwicklung der Objekterkennung mit YOLO wurden umfangreiche Datensätze mit annotierten Bildern benötigt. Die \texttt{display\_and\_save\_cameraImg\_node} erfüllte in diesem Zusammenhang zwei Funktionen: einerseits diente sie zur visuellen Kontrolle des Kamerabildes zur Laufzeit, andererseits speicherte sie regelmäßig aktuelle Bildframes ab, um damit die Trainingsdatenbasis zu erweitern.
+Für die Entwicklung der Objekterkennung mit YOLO wurden umfangreiche Datensätze mit annotierten Bildern benötigt. Die \texttt{display\_and\_save\_cameraImg\_node} erfüllte in diesem Zusammenhang zwei Funktionen:
+\begin{enumerate}
+    \item Einerseits diente sie zur visuellen Kontrolle des Kamerabildes zur Laufzeit, 
+    \item andererseits speicherte sie regelmäßig aktuelle Bildframes ab, um damit die Trainingsdatenbasis zu erweitern.
+\end{enumerate}
 
-Die Node subscribed auf das aktuelle Kamerabild des Duckiebots (komprimiertes JPEG über ROS) und zeigt dieses in einem separaten OpenCV-Fenster an. Parallel wird in einem zyklischen Intervall von standardmäßig 3 Sekunden ein Bild aus dem Videostrom unter dem angegebenen Dateinamen abgelegt. Die Dateien wurden im definierten Zielverzeichnis \texttt{/home/QuackSquad/dataset\_botSlot} gespeichert und konnten anschließend annotiert und weiterverarbeitet werden.
+Die Node subscribed auf das aktuelle Kamerabild des Duckiebots (komprimiertes JPEG über \ac{ROS}) und zeigt dieses in einem separaten OpenCV-Fenster an. Parallel wird in einem zyklischen Intervall von standardmäßig 3 Sekunden ein Bild aus dem Videostream unter dem angegebenen Dateipfad und -namen auf den Duckiebot abgelegt.
+
+In einem Terminal Fenster kann daraufhin mittels\\
+\texttt{\scriptsize docker cp <container\_name>:<Pfad/zu/Bildern/auf/Duckiebot> <Zielpfad/auf/Rechner}\\
+der Ordner mit den aufgenommenen Bilder auf den Hostrechner kopiert werden. Anschließend lassen sich die Bilder annotieren und weiterverarbeitenn (bspw. mit label-studio).
 
 Diese automatisierte Bildaufzeichnung war essenziell für den Aufbau und die kontinuierliche Verbesserung des Erkennungsmodells. Gleichzeitig ermöglichte die Node während Testfahrten eine einfache visuelle Rückmeldung zur Kameraposition, Bildqualität und Systemfunktionalität.
+
 
 \section{Zusammenfassung}
 
