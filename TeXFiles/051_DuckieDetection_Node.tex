@@ -22,9 +22,9 @@ Im Status 1 beginnt das eigentliche Ausweichmanöver. Hierbei wird auf Basis der
 
 Erst wenn über eine definierte Zeitspanne keine Objekte mehr auf der rechten Spur erkannt werden, wird in Modus 2 übergegangen. Dieser berechnet ein Rückführungsverhalten mit umgekehrter Kosinusbewegung, das die Rückkehr auf die rechte Spur einleitet. Nach erfolgreicher Rückführung wird der Zustand zurückgesetzt und der Zyklus beginnt von vorn.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
-    %\includegraphics[width=0.65\textwidth]{Figures/png/duckie_avoidance_flow.png}
+    \includegraphics[width=0.6\textwidth]{Figures/png/Ablaufdiagramme_Bericht-Ausweichen.drawio.png}
     \caption{Ablaufdiagramm des Ausweichverhaltens}
     \label{fig:duckie_avoidance_flow}
 \end{figure}
@@ -37,15 +37,17 @@ Die Kommunikation mit der \texttt{switch\_control\_node} erfolgt durch Veröffen
 
 Die technische Umsetzung der Hinderniserkennung und des Ausweichverhaltens erfolgt über das Zusammenspiel zweier spezialisierter Nodes: der \texttt{detect\_object\_node} zur visuellen Objekterkennung mittels neuronaler Netze sowie der \texttt{bypass\_duckie\_node} zur Umsetzung eines zeitlich und geometrisch gesteuerten Ausweichmanövers (siehe Anhang, Listing~\ref{lst:detect_object_node} und Listing~\ref{lst:bypass_duckie_node}).
 
-\subsection{Objekterkennung mit YOLOv8}
-Die \texttt{detect\_object\_node} basiert auf einem vortrainierten YOLOv8-Modell, das in Echtzeit Objekte im Kamerabild klassifiziert. Erkannt werden insbesondere:
+\subsection{Objekterkennung mit YOLOv8n}
+Die \texttt{detect\_object\_node} basiert auf einem vortrainierten YOLOv8n-Modell, das in Echtzeit Objekte im Kamerabild klassifiziert. Erkannt werden insbesondere:
 \begin{itemize}
     \item \texttt{Duckie} – kleine gelbe Hindernisse auf der Fahrspur
     \item \texttt{Bot} – andere Duckiebots
     \item \texttt{freeSlot} / \texttt{occupiedSlot} – Parkplätze
 \end{itemize}
 
-Jedes erkannte Objekt wird durch ein Bounding Box definiert und im Bild verortet. Die Zuverlässigkeit der Erkennung wird über eine Kombination aus Konfidenzschwellen und zeitlicher Mittelung (Moving Average) gesteigert. Zusätzlich wird über sogenannte Masken (vordefinierte Polygone) bestimmt, ob ein Objekt innerhalb eines relevanten Bereichs liegt – z.\,B.\ in der eigenen Spur oder im rechten Randbereich.
+Jedes erkannte Objekt wird durch ein Bounding Box definiert und im Bild verortet. Die Zuverlässigkeit der Erkennung wird über eine Kombination aus Konfidenzschwellen und zeitlicher Mittelung (Moving Average) gesteigert. Zusätzlich wird über sogenannte Masken (vordefinierte Polygone) bestimmt, ob ein Objekt innerhalb eines relevanten Bereichs liegt – z.\,B. in der eigenen Spur oder im rechten Randbereich.
+
+\newpage
 
 Zur Ausgabe werden die ermittelten Bounding Boxes in \texttt{Float64MultiArray}-Nachrichten über dedizierte Topics veröffentlicht, u.\,a.:
 \begin{itemize}

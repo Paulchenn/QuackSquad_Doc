@@ -3,9 +3,9 @@
 % Gedankengang beschreiben
 % Wie sind wir zur Lösung gekommen?
 % Herausforderungen und Probleme nennen
-Um Kollisionen mit anderen Duckiebots zu vermeiden, wurde eine Node entwickelt, die auf Basis des, am Duckiebot eingebauten, ToF-Sensors (Time of Flight) arbeitet. Diese Node ist dafür verantwortlich, den Abstand zu anderen Robotern zu messen und gegebenenfalls eine Korrektur der Fahrtrichtung bzw. der Fahrtgeschwindigkeit vorzunehmen.
+Um Kollisionen mit anderen Duckiebots zu vermeiden, wurde eine Node entwickelt, die auf Basis des, am Duckiebot eingebauten, \ac{ToF}-Sensors arbeitet. Diese Node ist dafür verantwortlich, den Abstand zu anderen Robotern zu messen und gegebenenfalls eine Korrektur der Fahrtrichtung bzw. der Fahrtgeschwindigkeit vorzunehmen.
 
-Eine zentrale Herausforderung bestand darin, zuverlässige Abstandsmessungen in Echtzeit zu gewährleisten, da der ToF-Sensor durch Umgebungslicht, reflektierende Oberflächen und die Bewegung des Roboters beeinflusst werden kann. Außerdem musste die Hardware am Duckiebot überprüft werden, dass zuverlässige Daten gesendet werden. Die Node wurde so gestaltet, dass sie schnell genug auf erkannte Hindernisse reagiert, um eine Kollision sicher zu vermeiden, ohne dabei unnötig oft oder abrupt zu bremsen.
+Eine zentrale Herausforderung bestand darin, zuverlässige Abstandsmessungen in Echtzeit zu gewährleisten, da der \ac{ToF}-Sensor durch Umgebungslicht, reflektierende Oberflächen und die Bewegung des Roboters beeinflusst werden kann. Außerdem musste die Hardware am Duckiebot überprüft werden, dass zuverlässige Daten gesendet werden. Die Node wurde so gestaltet, dass sie schnell genug auf erkannte Hindernisse reagiert, um eine Kollision sicher zu vermeiden, ohne dabei unnötig oft oder abrupt zu bremsen.
 
 Ein weiteres Problem war die Integration der Node in das bestehende Steuerungssystem des Duckiebots, sodass die Kollisionsvermeidung nahtlos mit anderen Fahrfunktionen zusammenarbeitet. Hierbei mussten Prioritäten zwischen verschiedenen Steuerbefehlen festgelegt und getestet werden, um ein sicheres und flüssiges Fahrverhalten zu gewährleisten.
 
@@ -20,26 +20,26 @@ Ein weiteres Problem war die Integration der Node in das bestehende Steuerungssy
     \includegraphics[width=0.8\textwidth]{Figures/png/Ablaufdiagramme_Bericht-Collision_Avoidance.drawio.png}
     \caption{Ablaufdiagramm der Collision Avoidance Node}
     \label{fig:collision_avoidance_node}
-
 \end{figure}
-In Abbildung \ref{fig:collision_avoidance_node} ist das Ablaufdiagramm der Collision Avoidance Node dargestellt. Die Node beginnt mit der Initialisierung der Sensoren und der ROS-Kommunikation. Anschließend wird in einer Endlosschleife kontinuierlich der Abstand zu Hindernissen vor dem Sensor gemessen. Wenn ein Hindernis in einem Bereich von 0,2 m bis 0,4 m erkannt wird, wird die Fahrtgeschwindigkeit reduziert, um das Hindernis langsam anzufahren. Kommt das Hindernis näher als 0,2 m hält der Duckiebot an, um eine Kollision zu vermeiden. Nach der Anpassung der Geschwindigkeit überwacht die Node weiterhin den Abstand um weiterfahren zu können, wenn das Hindernis nicht mehr im kritischen Erfassungsbereich ist.
+
+In Abbildung~\ref{fig:collision_avoidance_node} ist das Ablaufdiagramm der Collision Avoidance Node dargestellt. Die Node beginnt mit der Initialisierung der Sensoren und der ROS-Kommunikation. Anschließend wird in einer Endlosschleife kontinuierlich der Abstand zu Hindernissen vor dem Sensor gemessen. Wenn ein Hindernis in einem Bereich von 0,2\,m bis 0,4\,m erkannt wird, wird die Fahrtgeschwindigkeit reduziert, um das Hindernis langsam anzufahren. Kommt das Hindernis näher als 0,2\,m hält der Duckiebot an, um eine Kollision zu vermeiden. Nach der Anpassung der Geschwindigkeit überwacht die Node weiterhin den Abstand um weiterfahren zu können, wenn das Hindernis nicht mehr im kritischen Erfassungsbereich ist.
 
 \section{Technische Umsetzung im Code}
 \sectionmark{Tech}
 
-Die Umsetzung der Kollisionsvermeidung basiert auf einer eigenständigen Node, die kontinuierlich den Abstand zu vorausliegenden Objekten misst und bei Bedarf entsprechende Steuerinformationen an das zentrale Kontrollsystem übermittelt (siehe Anhang, Listing~\ref{lst:tof_collision_avoidance_node}). Grundlage ist der am Duckiebot verbaute Time-of-Flight-Sensor (ToF), dessen Messdaten über das ROS-Topic \texttt{/front\_center\_tof\_driver\_node/range} bereitgestellt werden.
+Die Umsetzung der Kollisionsvermeidung basiert auf einer eigenständigen Node, die kontinuierlich den Abstand zu vorausliegenden Objekten misst und bei Bedarf entsprechende Steuerinformationen an das zentrale Kontrollsystem übermittelt (siehe Anhang, Listing~\ref{lst:tof_collision_avoidance_node}). Grundlage ist der am Duckiebot verbaute \ac{ToF}-Sensor, dessen Messdaten über das ROS-Topic \texttt{/front\_center\_tof\_driver\_node/range} bereitgestellt werden.
 
 \subsection{Abstandsverarbeitung}
-Nach dem Start initialisiert die Node die ROS-Kommunikation und subscribed auf das Topic des ToF-Sensors. Die empfangenen Abstands­werte werden innerhalb der Callback-Funktion \texttt{range\_callback} verarbeitet und in einer internen Variablen gespeichert. In der \texttt{run}-Schleife erfolgt dann eine kontinuierliche Auswertung dieser Daten mit einer Frequenz von 20\,Hz.
+Nach dem Start initialisiert die Node die ROS-Kommunikation und subscribed auf das Topic des \ac{ToF}-Sensors. Die empfangenen Abstands­werte werden innerhalb der Callback-Funktion \texttt{range\_callback} verarbeitet und in einer internen Variablen gespeichert. In der \texttt{run}-Schleife erfolgt dann eine kontinuierliche Auswertung dieser Daten mit einer Frequenz von 20\,Hz.
 
 Je nach gemessenem Abstand unterscheidet die Node drei Zustände:
 \begin{itemize}
-    \item \textbf{Abstand < 0{,}2\,m:} Eine unmittelbare Kollision droht. Es wird der Statuscode \texttt{3} (STOP) auf \texttt{/tof/avoidance/info} publiziert.
+    \item \textbf{Abstand < 0{,}2\,m:} Eine unmittelbare Kollision droht. Es wird der Statuscode \texttt{3} (STOPP) auf \texttt{/tof/avoidance/info} publiziert.
     \item \textbf{Abstand zwischen 0{,}2\,m und 0{,}4\,m:} Ein kritischer Bereich ist erreicht. Der Duckiebot soll die Geschwindigkeit reduzieren. Es wird \texttt{1} (LANGSAM) publiziert.
     \item \textbf{Abstand > 0{,}4\,m:} Keine Gefährdung erkannt. Es erfolgt kein Publish; dadurch verbleibt der Steuerstatus bei \texttt{0} (Normalbetrieb).
 \end{itemize}
 
-Die Zustandswerte werden über einen \texttt{Int32}-Publisher bereitgestellt. Der \texttt{switch\_control\_node} wertet diese Informationen in Kombination mit anderen Quellen aus und priorisiert den STOP-Befehl entsprechend gegenüber allen anderen Fahrmanövern.
+Die Zustandswerte werden über einen \texttt{Int32}-Publisher bereitgestellt. Der \texttt{switch\_control\_node} wertet diese Informationen in Kombination mit anderen Quellen aus und priorisiert den STOPP-Befehl entsprechend gegenüber allen anderen Fahrmanövern.
 
 \subsection{Debugging und Systemintegration}
 Im Debug-Modus gibt die Node regelmäßig den aktuellen Sensorwert sowie den Status der Auswertung aus. Diese Funktionalität erleichterte die Parametrierung der Schwellwerte und die Nachvollziehbarkeit des Verhaltens.

@@ -9,9 +9,11 @@ Ziel der ersten Challenge war es, eine robuste Spurverfolgung zu implementieren,
 
 Ein wesentliches Problem bestand darin, die unterschiedlichen Linienmerkmale zuverlässig zu detektieren: Während die rechte Fahrbahn durch eine durchgezogene weiße Linie markiert ist, wird die linke Seite durch eine gelbe gestrichelte Linie definiert. Beide Markierungen unterliegen typischen Bildstörungen wie Reflexionen, Schatten oder partiellen Verdeckungen, was eine einfache Schwellenwertanalyse unzureichend machte.
 
-Zur Lösung wurde ein mehrstufiges Verfahren eingesetzt. Zunächst erfolgte eine Farbraumtransformation in HSV, die eine robustere Segmentierung gegenüber Lichtverhältnissen ermöglichte. Für jede Ziel-Farbe (weiß, gelb, rot) wurden separate Masken erstellt und durch Morphologieoperationen (Opening/Closing) bereinigt. Anschließend wurden die Konturen über einen Canny-Kantendetektor extrahiert, um die Linienkanten zu lokalisieren. Die x-Positionen der extremen Kanten (linkeste/rechteste) wurden gespeichert und an nachgelagerte Module übergeben.
+Zur Lösung wurde ein mehrstufiges Verfahren eingesetzt. Zunächst erfolgte eine Farbraumtransformation in \ac{HSV}, die eine robustere Segmentierung gegenüber Lichtverhältnissen ermöglichte. Für jede Ziel-Farbe (weiß, gelb, rot) wurden separate Masken erstellt und durch Morphologieoperationen (Opening/Closing) bereinigt. Anschließend wurden die Konturen über einen Canny-Kantendetektor extrahiert, um die Linienkanten zu lokalisieren. Die x-Positionen der extremen Kanten (linkeste/rechteste) wurden gespeichert und an nachgelagerte Module übergeben.
 
 Ein weiteres zentrales Problem stellte die Integration der Stopplinien-Erkennung dar. Diese sollte verhindern, dass zufällig auftretende rote Bildpixel eine Bremsung auslösen. Gelöst wurde dies über eine Maskierung des unteren Bildbereichs sowie die Definition eines Schwellwertes für die minimale Pixelanzahl, die eine rote Linie charakterisiert. Nur bei Überschreitung dieser Schwelle wurde ein Stopp-Befehl gesendet.
+
+\newpage
 
 Besonders wichtig war auch die Glättung der Zielkoordinate \texttt{target\_x}, um ein ruckfreies Lenkverhalten zu erzielen. Hierzu wurde ein Gleitmittelwert über die letzten erkannten Werte gebildet.
 
@@ -20,14 +22,14 @@ Besonders wichtig war auch die Glättung der Zielkoordinate \texttt{target\_x}, 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{Figures/png/Ablaufdiagramme_Bericht-Camera_reader.drawio.png}
+    \includegraphics[width=0.45\textwidth]{Figures/png/Ablaufdiagramme_Bericht-Camera_reader.drawio.png}
     \caption{Ablaufdiagramm der Camera Reader Node}
     \label{fig:camera_reader_node}
 \end{figure}
 
 Die \texttt{camera\_reader\_node} ist dafür verantwortlich, die Bilder der Frontkamera des Duckiebots zu empfangen und für die weitere Verarbeitung aufzubereiten. In Abbildung~\ref{fig:camera_reader_node} ist der typische Ablauf der Bildverarbeitung dargestellt.
 
-Die Node beginnt mit der Initialisierung der Kamera und der ROS-Kommunikation. Anschließend wird in einer Endlosschleife kontinuierlich ein Bild empfangen, das in den HSV-Farbraum transformiert wird. Mittels Farbmasken werden die relevanten Bereiche für weiß, gelb und rot isoliert. Über Canny-Kantenerkennung und Konturanalyse werden die Positionen der linken und rechten Fahrbahnlinie berechnet. Die Extrempunkte werden als \texttt{left\_x} und \texttt{right\_x} veröffentlicht. Daraus wird ein mittiger Zielpunkt \texttt{target\_x} berechnet und geglättet.
+Die Node beginnt mit der Initialisierung der Kamera und der ROS-Kommunikation. Anschließend wird in einer Endlosschleife kontinuierlich ein Bild empfangen, das in den \ac{HSV}-Farbraum transformiert wird. Mittels Farbmasken werden die relevanten Bereiche für weiß, gelb und rot isoliert. Über Canny-Kantenerkennung und Konturanalyse werden die Positionen der linken und rechten Fahrbahnlinie berechnet. Die Extrempunkte werden als \texttt{left\_x} und \texttt{right\_x} veröffentlicht. Daraus wird ein mittiger Zielpunkt \texttt{target\_x} berechnet und geglättet.
 
 Zusätzlich wird der untere Bildbereich auf rot gefiltert, um potenzielle Stopplinien zu erkennen. Wird ein definierter Schwellenwert überschritten, wird auf einem separaten Topic ein Stopp-Signal publiziert. Alle berechneten Koordinaten und Debug-Informationen können optional visualisiert werden.
 
@@ -43,13 +45,13 @@ Die Umsetzung der Spurverfolgung erfolgt maßgeblich durch die \texttt{camera\_r
 Beim Start der Node werden verschiedene Parameter und Topics initialisiert. Dazu zählen:
 \begin{itemize}
     \item Einbindung der Umgebungsvariablen wie \texttt{VEHICLE\_NAME} zur Definition des spezifischen Kameratopics.
-    \item Laden der Farbkonfigurationen aus einer YAML-Datei zur Definition der HSV-Bereiche für Weiß, Gelb und Rot.
+    \item Laden der Farbkonfigurationen aus einer YAML-Datei zur Definition der \ac{HSV}-Bereiche für Weiß, Gelb und Rot.
     \item Einrichtung von Publishern für die erkannten Fahrbahnlinien (\texttt{left\_x}, \texttt{right\_x}), der berechneten Zielkoordinate (\texttt{lane}) sowie eines Stoppsignals bei Erkennung einer roten Linie.
     \item Registrierung von Subscribern für das Kamerabild und erkannte Bounding Boxes von Objekten (Duckies), die für die Filterung von Bildartefakten herangezogen werden.
 \end{itemize}
 
 \subsection{Verarbeitung des Kamerabilds}
-Im Hauptloop wird das empfangene Bild zunächst in den HSV-Farbraum transformiert. Anschließend werden Masken für die Farben Weiß, Gelb und Rot erstellt. Für die Rot-Erkennung werden zwei getrennte HSV-Bereiche (0--10 und 170--180) kombiniert, um die Umbruchstelle im Farbraum zu berücksichtigen.
+Im Hauptloop wird das empfangene Bild zunächst in den \ac{HSV}-Farbraum transformiert. Anschließend werden Masken für die Farben Weiß, Gelb und Rot erstellt. Für die Rot-Erkennung werden zwei getrennte \ac{HSV}-Bereiche (0--10 und 170--180) kombiniert, um die Umbruchstelle im Farbraum zu berücksichtigen.
 
 Die Masken für Weiß und Gelb werden zusätzlich durch morphologische Operationen bereinigt, um Störungen zu minimieren. Zur robusten Detektion der roten Stopplinie wird das Bild vertikal unterteilt, sodass nur rote Pixel im unteren Viertel des Bildes zur Bewertung herangezogen werden. Wird ein konfigurierter Schwellwert an Pixelanzahl überschritten, wird ein Stoppbefehl gesendet:
 \begin{equation}
