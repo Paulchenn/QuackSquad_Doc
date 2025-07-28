@@ -1,7 +1,25 @@
 \chapter{Fazit und Ausblick}
 \label{ch:Zusammenfassung}
 
-\lipsum[1-3]
+\section{Fazit}
+
+Dieses Projekt umfasste die Entwicklung und Implementierung autonomer Funktionen für den Duckiebot in der Modellumgebung Duckietown. Kernziele waren die Bewältigung von fünf aufeinander aufbauenden Herausforderungen, die wesentliche Aspekte der mobilen Robotik, Bildverarbeitung und Systemintegration abdeckten.
+
+Die Basis bildete eine robuste Spurverfolgung, bei der die \texttt{camera\_reader\_node} Fahrbahnlinien und rote Stopplinien zuverlässig erkannte und daraus präzise Zielpunkte ableitete. Darauf aufbauend wurde das Kreuzungsverhalten implementiert. Der Duckiebot konnte Kreuzungen erkennen, anhalten und zufällig eine Fahrtrichtung wählen, wobei die Vorfahrtsregel \enquote{Rechts vor Links} durch Objekterkennung anderer Fahrzeuge beachtet und durch ein Blinkersystem kommuniziert wurde.
+
+Die Fähigkeit zur Hinderniserkennung und zum Ausweichen wurde mittels eines vortrainierten YOLOv8n-Modells und einer \texttt{bypass\_duckie\_node} realisiert. Diese ermöglichte flüssige, zeitbasierte Ausweichmanöver um statische Hindernisse und eine anschließende Rückführung auf die Fahrspur. Ein Parkmanöver wurde ebenfalls implementiert, bei dem die ParkingNode eine freie Lücke identifizierte, präzise rückwärts einparkte und nach einer Wartezeit die Fahrt wieder aufnahm. Den Abschluss bildete die Integration im Mehrbot-System, wo eine Kollisionsvermeidung mittels \ac{ToF}-Sensor die Sicherheit im Zusammenspiel mehrerer Fahrzeuge gewährleistete.
+
+Eine zentrale Steuerstruktur und die Priorisierung von Befehlen durch die \texttt{switch\_control\_node} ermöglichten das adaptive und robuste Verhalten des Duckiebots. Die Nutzung von \ac{ROS}, Docker und Git förderte dabei eine modulare und reproduzierbare Softwareentwicklung.
+
+
+\section{Ausblick}
+
+Das Projekt liefert eine solide Basis für zukünftige Entwicklungen im Bereich der autonomen Mobilität. Potenziale zur Weiterentwicklung liegen insbesondere in der Optimierung der Wahrnehmung durch fortschrittlichere neuronale Netzwerke und die Integration zusätzlicher Sensordaten (z.B. Lidar, Ultraschall) zur Erhöhung der Robustheit unter variierenden Bedingungen.
+
+Hinsichtlich der Entscheidungsfindung und Pfadplanung könnten lernbasierte oder prädiktive Ansätze die aktuellen heuristischen Methoden ergänzen, um das Verhalten in komplexen Szenarien, wie dynamischen Verkehrssituationen oder kooperativen Manövern im Mehrbot-System, zu verfeinern. Eine intelligentere Vorfahrtsregelung, die nicht zwingend an jedem Stoppschild hält, wenn die Kreuzung frei ist, wäre ein nächster Schritt. Des Weiteren könnten Mechanismen zur Fehlerbehandlung und dynamischen Rekonfiguration die Zuverlässigkeit und Flexibilität des Systems weiter verbessern.
+
+Insgesamt bietet die Duckietown-Plattform ideale Möglichkeiten, um Konzepte der Robotik unter zu erproben und für zukünftige, komplexere autonome Systeme weiterzuentwickeln.
+
 
 
 % End of File %%
