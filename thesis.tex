@@ -75,6 +75,7 @@
 \usepackage{ragged2e}
 \usepackage{booktabs}
 \usepackage{arydshln}
+\usepackage{listings}
 % Examples: https://texblog.org/2012/12/21/multi-column-and-multi-row-cells-in-latex-tables/
 
 %% Joining fields in tables:
@@ -236,10 +237,10 @@
 \pagestyle{fancy}  % Eigener Seitenstil
 \fancyhf{}         % Alle Kopf- und Fußzeilenfelder bereinigen
 %\fancyhead[L]{} % Kopfzeile links
-\fancyhead[l]{\leftmark
+\fancyhead[l]{\small\leftmark
 	%\makebox[0.3\textwidth]{\includegraphics[width=0.3\textwidth]{Figures/xxx.png}}
 }  
-\fancyhead[c]{\hspace*{0.15\textwidth}\rightmark}
+%\fancyhead[c]{\hspace*{0.15\textwidth}\rightmark}
 %\fancyhead[C]{\usebox\headbox}                        % Centered header
 \fancyhead[R]{
 %	\makebox[0.2\textwidth]{\raisebox{-1ex}{\hspace*{14ex}\includegraphics[width=0.1\textwidth]{Figures/png/HKA_Logo.png}}}
@@ -397,6 +398,7 @@
 	\input{TeXFiles/061_parking_Node}
 	\input{TeXFiles/070_Challenge_5}
 	\input{TeXFiles/071_Collision_Avoidance_Node}
+	\input{TeXFiles/080_Tools.tex}
 	\input{TeXFiles/100_Zusammenfassung}
 
 	\begin{appendix}
