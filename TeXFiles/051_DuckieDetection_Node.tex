@@ -34,30 +34,21 @@ Die Kommunikation mit der \texttt{switch\_control\_node} erfolgt durch Veröffen
 
 \section{Technische Umsetzung im Code}
 \label{sec:Duckie_Code}
+\sectionmark{Tech}
 
-Die technische Umsetzung der Hinderniserkennung und des Ausweichverhaltens erfolgt über das Zusammenspiel zweier spezialisierter Nodes: der \texttt{detect\_object\_node} zur visuellen Objekterkennung mittels neuronaler Netze sowie der \texttt{bypass\_duckie\_node} zur Umsetzung eines zeitlich und geometrisch gesteuerten Ausweichmanövers (siehe Anhang, Listing~\ref{lst:detect_object_node} und Listing~\ref{lst:bypass_duckie_node}).
+Die Umsetzung der Hindernisvermeidung basiert auf zwei Hauptkomponenten:
+\begin{enumerate}
+    \item Der generischen Objekterkennung und
+    \item einer dedizierten Node zur Ausweichmanöver-Steuerung.
+\end{enumerate}
 
-\subsection{Objekterkennung mit YOLOv8n}
-Die \texttt{detect\_object\_node} basiert auf einem vortrainierten YOLOv8n-Modell, das in Echtzeit Objekte im Kamerabild klassifiziert. Erkannt werden insbesondere:
-\begin{itemize}
-    \item \texttt{Duckie} – kleine gelbe Hindernisse auf der Fahrspur
-    \item \texttt{Bot} – andere Duckiebots
-    \item \texttt{freeSlot} / \texttt{occupiedSlot} – Parkplätze
-\end{itemize}
-
-Jedes erkannte Objekt wird durch ein Bounding Box definiert und im Bild verortet. Die Zuverlässigkeit der Erkennung wird über eine Kombination aus Konfidenzschwellen und zeitlicher Mittelung (Moving Average) gesteigert. Zusätzlich wird über sogenannte Masken (vordefinierte Polygone) bestimmt, ob ein Objekt innerhalb eines relevanten Bereichs liegt – z.\,B. in der eigenen Spur oder im rechten Randbereich.
+\subsection{Objekterkennung der Hindernisse}
+Die Detektion von Hindernissen, insbesondere der Enten (sogenannte \enquote{Duckies}), erfolgt zentral über die Objekterkennungs-Pipeline des Systems, wie in Kapitel~\ref{ch:Objekterkennung} umfassend beschrieben. Die dafür zuständige \texttt{detect\_object\_node} nutzt ein YOLOv8n-Modell, um \enquote{duckie}-Objekte in den Kamerabildern zu identifizieren. Die ermittelten Bounding Boxes der erkannten Hindernisse werden über das \ac{ROS}-Topic \texttt{/{\_vehicle\_name}/detect/object/obstacle\_distance} bereitgestellt, welches primär den vertikalen Mittelpunkt der Bounding Box als Indikator für die Hindernisdistanz enthält. Diese Information dient als Eingabe für die nachfolgende Ausweichlogik.
 
 \newpage
 
-Zur Ausgabe werden die ermittelten Bounding Boxes in \texttt{Float64MultiArray}-Nachrichten über dedizierte Topics veröffentlicht, u.\,a.:
-\begin{itemize}
-    \item \texttt{/detect/object/duckieNearestBB}
-    \item \texttt{/detect/object/duckieNearestRightBB}
-\end{itemize}
-Diese Daten bilden die Grundlage für die Ausweichentscheidung in der nachfolgenden Node.
-
 \subsection{Ausweichlogik in der Bypass-Node}
-Die \texttt{bypass\_duckie\_node} verarbeitet die erkannte Position der Enten (v.\,a.\ das untere Ende der Bounding Box $y_2$), um ein phasenbasiertes Ausweichmanöver zu steuern. Das Verhalten ist in drei Modi unterteilt:
+Die \texttt{bypass\_duckie\_node} verarbeitet die erkannte Position der Enten (v.\,a. das untere Ende der Bounding Box $y_2$), um ein phasenbasiertes Ausweichmanöver zu steuern. Das Verhalten ist in drei Modi unterteilt:
 
 \begin{itemize}
     \item \textbf{Modus 0 – Normalfahrt:} Solange keine Ente erkannt wird oder diese weit entfernt ist ($y_2 < \texttt{min\_distance}$), erfolgt reguläre Spurverfolgung. Wird eine Ente als nah klassifiziert, wird in den Ausweichmodus gewechselt.
