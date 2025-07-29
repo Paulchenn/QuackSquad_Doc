@@ -7,34 +7,36 @@ Zur erfolgreichen Umsetzung der verschiedenen Challenges im Rahmen des Projekts 
 
 Unterschiedliche Lichtverhältnisse, etwa durch Sonnenlicht, Schatten oder künstliche Beleuchtung, führten im Testumfeld regelmäßig dazu, dass die Fahrbahnmarkierungen nicht zuverlässig erkannt wurden. Um unter allen Bedingungen eine stabile Bildverarbeitung sicherzustellen, war daher vor jedem Arbeitstag eine Kalibrierung der Farbwerte erforderlich. Die hier eingesetzte Kalibrierungs-Node erleichterte diesen Vorgang erheblich und machte die Justierung der HSV-Werte effizient und wiederholbar.
 
-Die \texttt{white\_yellow\_red\_calibration\_node} stellte hierzu eine interaktive Kalibrierungsumgebung zur Verfügung. Über eine OpenCV-basierte Benutzeroberfläche konnten für jede der drei Farbklassen die sechs relevanten Parameter (Hue, Saturation, Value: jeweils untere und obere Grenze) per Trackbar in Echtzeit angepasst werden. Die betroffenen Bildbereiche wurden live eingefärbt dargestellt, sodass die Wirkung der Einstellungen unmittelbar überprüft werden konnte.
+Die \texttt{white\_yellow\_red\_calibration\_node} stellte eine interaktive Kalibrierungsumgebung bereit, in der für jede der drei Farbklassen \texttt{white}, \texttt{gelb} und \texttt{red} die sechs relevanten Parameter (Hue, Saturation, Value – jeweils untere und obere Grenze) per OpenCV-Trackbars in Echtzeit angepasst werden konnten. Die betroffenen Bildbereiche wurden live eingefärbt dargestellt, sodass sich die Wirkung der Einstellungen unmittelbar überprüfen ließ. Ein Modus-Switch ermöglichte das gezielte Umschalten zwischen den Farbklassen. Per Tastendruck konnten die jeweils eingestellten Werte gespeichert und automatisch in einer YAML-Konfigurationsdatei abgelegt werden, um sie zur Laufzeit direkt wiederzuverwenden.
+
+Die Kalibrierung der roten Stopplinien war dabei besonders sensibel, da eine zuverlässige Trennung von Hintergrundartefakten erforderlich war. Insgesamt erwies sich die \texttt{white\_yellow\_red\_calibration\_node} als essenzielles Werkzeug, um das System auf wechselnde Lichtbedingungen vorzubereiten und eine stabile Bildverarbeitung während der Entwicklung sicherzustellen.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{Figures/png/Kalibrierung_weiß.png}
-    \caption{Kalibrierung der weißen Fahrbahnmarkierung bei hoher Helligkeit}
-    \label{fig:hsv_white}s
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/png/Kalibrierung_weiß.png}
+        \caption{Weiß bei hoher Helligkeit}
+        \label{fig:hsv_white}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/png/Kalibrierung_gelb.png}
+        \caption{Gelb mit optimierter Segmentierung}
+        \label{fig:hsv_yellow}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/png/Kalibrierung_rot.png}
+        \caption{Rot mit zweigeteilter HSV-Maske}
+        \label{fig:hsv_red}
+    \end{subfigure}
+    \caption{Beispielhafte Kalibrierung der Farbklassen Weiß, Gelb und Rot}
+    \label{fig:hsv_calibration}
 \end{figure}
 
-Ein Modus-Switch ermöglichte das gezielte Umschalten zwischen den drei Farbklassen \texttt{white}, \texttt{gelb} und \texttt{red}. Die aktuell eingestellten Werte wurden bei Bedarf durch Tastendruck gespeichert und automatisch in der zugehörigen YAML-Konfigurationsdatei abgelegt, sodass sie zur Laufzeit direkt wiederverwendet werden konnten.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{Figures/png/Kalibrierung_gelb.png}
-    \caption{Kalibrierung der gelben Fahrbahnmarkierung mit optimierter Segmentierung}
-    \label{fig:hsv_yellow}
-\end{figure}
-
-Die Kalibrierung der roten Stopplinien war besonders sensibel, da eine robuste Unterscheidung von Hintergrundartefakten erforderlich war. Die korrekte Einstellung der HSV-Grenzen ermöglichte eine zuverlässige Detektion, wie in Abbildung~\ref{fig:hsv_red} zu sehen ist.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{Figures/png/Kalibrierung_rot.png}
-    \caption{Kalibrierung der roten Stopplinien mit zweigeteilter HSV-Maske}
-    \label{fig:hsv_red}
-\end{figure}
-
-Die \texttt{white\_yellow\_red\_calibration\_node} war somit ein essenzielles Werkzeug, um das System auf wechselnde Lichtbedingungen vorzubereiten und die Bildverarbeitung während der Entwicklung stabil zu halten.
 
 
 \section{Visuelle Kontrolle und Datensatzgenerierung}
@@ -52,8 +54,3 @@ In einem Terminal Fenster kann daraufhin mittels\\
 der Ordner mit den aufgenommenen Bilder auf den Hostrechner kopiert werden. Anschließend lassen sich die Bilder annotieren und weiterverarbeitenn (bspw. mit label-studio).
 
 Diese automatisierte Bildaufzeichnung war essenziell für den Aufbau und die kontinuierliche Verbesserung des Erkennungsmodells. Gleichzeitig ermöglichte die Node während Testfahrten eine einfache visuelle Rückmeldung zur Kameraposition, Bildqualität und Systemfunktionalität.
-
-
-\section{Zusammenfassung}
-
-Beide Tools trugen entscheidend zur Effizienz und Qualität der Projektarbeit bei. Während die Kalibrierungs-Node eine präzise Farbanpassung unter realen Bedingungen erlaubte, ermöglichte die Bildspeicher-Node eine systematische Erfassung von Trainingsdaten und Testbildern. Durch ihre Modularität und intuitive Bedienung konnten sie in allen Projektphasen flexibel eingesetzt werden und erleichterten sowohl die Initialisierung als auch die kontinuierliche Weiterentwicklung des Gesamtsystems.
