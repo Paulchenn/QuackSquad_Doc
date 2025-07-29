@@ -362,16 +362,16 @@
 	\newpage
 	% Table of Figures
 	\listoffigures
-	\newpage
+	%\newpage
 	% Table of tables
-	\listoftables
+	%\listoftables
 	% Glossary
-	\ifdefined\ThesisLanguageIsEnglish
-		\printglossary[title=Glossary, toctitle=Glossary]
-	\else
+	%\ifdefined\ThesisLanguageIsEnglish
+	%	\printglossary[title=Glossary, toctitle=Glossary]
+	%\else
 	%		\printglossary[title=Glossar, toctitle=Glossar]
-		\printglossaries
-	\fi
+	%	\printglossaries
+	%\fi
 	% Acronyms
 	\input{TeXFiles/004_Acronyms}
 	
@@ -402,9 +402,9 @@
 	\input{TeXFiles/080_Tools.tex}
 	\input{TeXFiles/100_Zusammenfassung}
 
-	\begin{appendix}
-		\input{TeXFiles/110_Anhang}
-	\end{appendix}
+	% \begin{appendix}
+	% 	\input{TeXFiles/110_Anhang}
+	% \end{appendix}
 	
 	\clearpage
 
@@ -424,7 +424,7 @@
 	
 	%\printbibliography[heading=bibnumbered]    % With chapter number/letter
 	
-	\input{TeXFiles/120_Declaration}
+	%\input{TeXFiles/120_Declaration}
 \end{document}
 
 %% End of File
