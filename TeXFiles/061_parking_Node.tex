@@ -61,32 +61,41 @@ Die technische Realisierung des Parkmanövers erfolgt hauptsächlich durch die \
 \subsection{Parklückenerkennung und -auswahl}
 Die \texttt{parking\_node} abonniert die \ac{ROS}-Topics \texttt{/detect/object/parkingBB} und \texttt{/detect/object/parkingOccupiedBB}. 
 Diese werden von der zentralen Objekterkennungs-Node (siehe Kapitel~\ref{ch:Objekterkennung}) mit Bounding Boxes (visuellen Koordinaten der Parklücken im Kamerabild) erkannter Parklücken beliefert.
-Die \texttt{parking\_node} entscheidet basierend auf der veröffentlichten Klassifizierung (\enquote{free} oder \enquote{occupied}) und der zeitlichen Gültigkeit (time\_lastFree, time\_lastOccupied) über die Eignung eines Parkplatzes. Ein Parkvorgang wird nur eingeleitet, wenn eine freie Parklücke erkannt wird und sich diese in einem definierten Bereich des Kamerabildes befindet (durch die Parameter \texttt{xForSlowDrive} und \texttt{yForSlowDrive} in der YAML-Konfiguration festgelegt).
+Die \texttt{parking\_node} entscheidet basierend auf der veröffentlichten Klassifizierung (\enquote{free} oder \enquote{occupied}) und der zeitlichen Gültigkeit (time\_lastFree, time\_lastOccupied) über die Eignung eines Parkplatzes (siehe Abbildung~\ref{fig:parking_free_slot}). Ein Parkvorgang wird nur eingeleitet, wenn eine freie Parklücke erkannt wird und sich diese in einem definierten Bereich des Kamerabildes befindet (durch die Parameter \texttt{xForSlowDrive} und \texttt{yForSlowDrive} in der YAML-Konfiguration festgelegt).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/png/freeSlot.png}
+    \caption{Erkannter freier Parkplatz (\enquote{freeSlot}) im Kamerabild. Die Bounding Box visualisiert die Position der erkannten Lücke.}
+    \label{fig:parking_free_slot}
+\end{figure}
 
 \newpage
 
 
 \subsection{Zustandsmanagement und Manövrierung}
-Die Kernlogik ist eine finite Zustandsmaschine mit den Modi IDLE, SLOW, PARKING, WAIT und EXIT. Die Übergänge zwischen diesen Zuständen werden durch Timer und sensorische Rückmeldungen gesteuert:
+Die Kernlogik ist eine finite Zustandsmaschine mit den Modi \texttt{IDLE}, SLOW, \texttt{PARKING}, \texttt{WAIT} und \texttt{EXIT}. Die Übergänge zwischen diesen Zuständen werden durch Timer und sensorische Rückmeldungen gesteuert:
 \begin{itemize}
-\item \textbf{\texttt{IDLE} $\rightarrow$ \texttt{SLOW}:} Eine freie Parklücke wird im definierten Bereich der Kamerabildes erkannt.
+\item \textbf{\texttt{IDLE} $\rightarrow$ \texttt{\texttt{SLOW}}:} Eine freie Parklücke wird im definierten Bereich der Kamerabildes erkannt.
 \item \textbf{\texttt{SLOW} $\rightarrow$ \texttt{PARKING}:} Nach einer 2-sekündigen Annäherungsphase, in der die Geschwindigkeit des Duckiebots reduziert wird.
 \item \textbf{\texttt{PARKING} $\rightarrow$ \texttt{WAIT}:} Sobald der Duckiebot erfolgreich rückwärts in die Parklücke manövriert wurde. Der Erfolg wird durch einen geringen lateralen und Winkel-Fehler der gelben Parklinien zur Zielgeraden (\texttt{self.m\_target}, \texttt{self.b\_target}) signalisiert.
 \item \textbf{\texttt{WAIT} $\rightarrow$ \texttt{EXIT}:} Nach einer Wartezeit von 5 Sekunden im geparkten Zustand.
 \item \textbf{\texttt{EXIT} $\rightarrow$ \texttt{IDLE}:} Nach einer 1-sekündigen Ausfahrbewegung, um die Parklücke zu verlassen.
 \end{itemize}
 
-Während des \texttt{PARKING}-Zustands kommt eine spezifische bildbasierte Regelung zum Einsatz. Die Funktion \texttt{detect\_yellow} identifiziert die gelbe Parklinien im Kamerabild (unter Verwendung von \ac{HSV}-Farbraummasken, morphologischen Operationen und Konturerkennung, ähnlich der Spurverfolgung). Aus diesen detektierten Linien wird eine geglättete Linie abgeleitet (\texttt{m\_yellow\_smooth}, \texttt{b\_yellow\_smooth}). Die Funktion \texttt{calculate\_control} berechnet dann basierend auf einem PID-Regler die notwendigen Lenk- (\texttt{omega}) und Geschwindigkeitsbefehle (\texttt{v}). Der Fehler für den PID-Regler wird aus der Abweichung der erkannten gelben Linie von einer definierten Zielgeraden im Bild ($y=270$) ermittelt. Der Duckiebot fährt dabei rückwärts (negativer \texttt{v}-Wert), um sich an der gelben Linie auszurichten und präzise in die Lücke einzufahren. Die Glättung von Linienparametern und Fehlern über Historien (\texttt{smooth\_N}, \texttt{smooth\_error\_N}) sorgt für ein ruhigeres Fahrverhalten.
+Während des \texttt{PARKING}-Zustands kommt eine spezifische bildbasierte Regelung zum Einsatz. Die Funktion \texttt{detect\_yellow} identifiziert die gelbe Parklinien im Kamerabild (unter Verwendung von \ac{HSV}-Farbraummasken, morphologischen Operationen und Konturerkennung, ähnlich der Spurverfolgung). Aus diesen detektierten Linien wird eine geglättete Linie abgeleitet (\texttt{m\_yellow\_smooth}, \texttt{b\_yellow\_smooth}). Die Funktion \texttt{calculate\_control} berechnet dann basierend auf einem PID-Regler die notwendigen Lenk- (\texttt{omega}) und Geschwindigkeitsbefehle (\texttt{v}). Der Fehler für den PID-Regler wird aus der Abweichung der erkannten gelben Linie von einer definierten Zielgeraden im Bild ($y=270$) ermittelt. Der Duckiebot fährt dabei rückwärts (negativer \texttt{v}-Wert), um sich an der gelben Linie auszurichten und präzise in die Lücke einzufahren. Die Glättung von Linienparametern und Fehlern über Historien (\texttt{smooth\_N}, \texttt{smooth\_error\_N}) sorgt für ein ruhigeres Fahrverhalten (siehe Abbildung~\ref{fig:parking_pid_control}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/png/Parking_PID_Control.png}
+    \caption{Visuelle Darstellung der PID-Regelung während des Parkmanövers.}
+    \label{fig:parking_pid_control}
+\end{figure}
 
 Die Kommunikation mit der zentralen Steuerung (\texttt{switch\_control\_node}) erfolgt über das Topic \texttt{/detect/object/slow4park}. Die \texttt{parking\_node} publiziert hier einen Statuscode (\texttt{Int32(5)} für \texttt{PARKING}, \texttt{WAIT}, \texttt{EXIT}; \texttt{1} für \texttt{SLOW}). Dadurch wird der \texttt{switch\_control\_node} signalisiert, die Steuerungspriorität für den Parkvorgang zu erhöhen oder eine reduzierte Geschwindigkeit für die Annäherung beizubehalten, während andere Funktionen (wie die Spurverfolgung) temporär unterdrückt werden.
 
 
 \subsection{Visuelle Rückmeldung (Blinker)}
 Zur visuellen Anzeige des Parkmanövers werden die LEDs des Duckiebots als Blinker aktiviert. Beim Übergang in den \texttt{SLOW}- und \texttt{EXIT}-Zustand wird ein gelbes Blinkmuster mit einer Frequenz von 2\,Hz auf den vorderen und hinteren seitlichen LEDs aktiviert. Dies erfolgt über eine \ac{ROS}-Timer-Funktion (\texttt{blink\_all\_leds}), die die LED-Muster auf dem Topic \texttt{/led\_emitter\_node/led\_pattern} publiziert. Während des \texttt{WAIT}-Zustands sind die LEDs ausgeschaltet, und nach Abschluss des Parkvorgangs (Rückkehr zu \texttt{IDLE}) werden die LEDs wieder in den Standardzustand zurückgesetzt.
-
-\newpage
-
-\subsection{Zusammenfassung}
-Die \texttt{parking\_node} bietet eine umfassende Lösung für autonome Parkmanöver, die auf einer robusten Kombination aus Parklückenerkennung, einer flexiblen Zustandsmaschine und einer präzisen PID-basierten Rückwärtslenkung basiert. Die Integration mit dem übergeordneten Steuerungssystem des Duckiebots gewährleistet eine nahtlose Einbindung in das Gesamtsystem, während die visuellen Rückmeldungen die Benutzerinteraktion verbessern.
 
 %% End of File %%
