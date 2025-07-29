@@ -27,7 +27,8 @@ In Abbildung~\ref{fig:collision_avoidance_node} ist das Ablaufdiagramm der Colli
 \section{Technische Umsetzung im Code}
 \sectionmark{Tech}
 
-Die Umsetzung der Kollisionsvermeidung basiert auf zwei eigenständigen Nodes, die jeweils unterschiedliche Aspekte des Szenarios abdecken: Die \texttt{tof\_collision\_avoidance\_node} reagiert auf unmittelbare Hindernisse im Frontbereich über einen \ac{ToF}-Sensor, während die \texttt{red\_line\_detector} zusätzlich die Regel „Rechts vor Links“ an Kreuzungen berücksichtigt und auf erkannte Duckiebots reagiert (siehe Anhang, Listings~\ref{lst:tof_collision_avoidance_node} und~\ref{lst:red_line_detector}).
+Die Umsetzung der Kollisionsvermeidung basiert auf zwei eigenständigen Nodes, die jeweils unterschiedliche Aspekte des Szenarios abdecken: Die \texttt{tof\_collision\_avoidance\_node} reagiert auf unmittelbare Hindernisse im Frontbereich über einen \ac{ToF}-Sensor, während die \texttt{intersection\_handling\_node} zusätzlich die Regel „Rechts vor Links“ an Kreuzungen berücksichtigt und auf erkannte Duckiebots reagiert (siehe~\cite{QuackSquad}, Funktion \texttt{intersection\_handling\_node.py})
+.
 
 \subsection{Abstandsbasierte Erkennung mit ToF-Sensor}
 Nach dem Start initialisiert die Node die ROS-Kommunikation und subscribed auf das Topic des \ac{ToF}-Sensors. Die empfangenen Abstands­werte werden innerhalb der Callback-Funktion \texttt{range\_callback} verarbeitet und in einer internen Variablen gespeichert. In der \texttt{run}-Schleife erfolgt dann eine kontinuierliche Auswertung dieser Daten mit einer Frequenz von 20\,Hz.
