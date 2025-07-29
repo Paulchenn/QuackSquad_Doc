@@ -22,9 +22,9 @@ Im Status 1 beginnt das eigentliche Ausweichmanöver. Hierbei wird auf Basis der
 
 Erst wenn über eine definierte Zeitspanne keine Objekte mehr auf der rechten Spur erkannt werden, wird in Modus 2 übergegangen. Dieser berechnet ein Rückführungsverhalten mit umgekehrter Kosinusbewegung, das die Rückkehr auf die rechte Spur einleitet. Nach erfolgreicher Rückführung wird der Zustand zurückgesetzt und der Zyklus beginnt von vorn.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{Figures/png/Ablaufdiagramme_Bericht-Ausweichen.drawio.png}
+    \includegraphics[width=0.29\textwidth]{Figures/png/Ablaufdiagramme_Bericht-Ausweichen.drawio.png}
     \caption{Ablaufdiagramm des Ausweichverhaltens}
     \label{fig:duckie_avoidance_flow}
 \end{figure}
@@ -44,8 +44,6 @@ Die Umsetzung der Hindernisvermeidung basiert auf zwei Hauptkomponenten:
 
 \subsection{Objekterkennung der Hindernisse}
 Die Detektion von Hindernissen, insbesondere der Enten (sogenannte \enquote{Duckies}), erfolgt zentral über die Objekterkennungs-Pipeline des Systems, wie in Kapitel~\ref{ch:Objekterkennung} umfassend beschrieben. Die dafür zuständige \texttt{detect\_object\_node} nutzt ein YOLOv8n-Modell, um \enquote{duckie}-Objekte in den Kamerabildern zu identifizieren. Die ermittelten Bounding Boxes der erkannten Hindernisse werden über das \ac{ROS}-Topic \texttt{/{\_vehicle\_name}/detect/object/obstacle\_distance} bereitgestellt, welches primär den vertikalen Mittelpunkt der Bounding Box als Indikator für die Hindernisdistanz enthält. Diese Information dient als Eingabe für die nachfolgende Ausweichlogik.
-
-\newpage
 
 \subsection{Ausweichlogik in der Bypass-Node}
 Die \texttt{bypass\_duckie\_node} verarbeitet die erkannte Position der Enten (v.\,a. das untere Ende der Bounding Box $y_2$), um ein phasenbasiertes Ausweichmanöver zu steuern. Das Verhalten ist in drei Modi unterteilt:
@@ -80,17 +78,23 @@ Abbildung~\ref{fig:bypass_target_active} visualisiert die resultierende Reaktion
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{Figures/png/YOLO_Duckie.png}
-    \caption{Erkennung eines Duckies auf der rechten Spur mit \texttt{duckie\_right}-Label}
-    \label{fig:duckie_detection_target}
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/png/YOLO_Duckie.png}
+        \caption{Erkennung eines Duckies mit \texttt{duckie\_right}-Label}
+        \label{fig:duckie_detection_target}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/png/Bypass_Target_View.png}
+        \caption{Zielpunkt im aktiven Ausweichmodus (\texttt{Bypass Target X})}
+        \label{fig:bypass_target_active}
+    \end{subfigure}
+    \caption{Duckie-Erkennung und Ausweichzielpunkt im Bildvergleich}
+    \label{fig:duckie_and_bypass}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\textwidth]{Figures/png/Bypass_Target_View.png}
-    \caption{Berechneter Zielpunkt im aktiven Ausweichmodus (\texttt{Bypass Target X})}
-    \label{fig:bypass_target_active}
-\end{figure}
 
 \subsection{Zusammenfassung}
 Die Hinderniserkennung und das Umfahrverhalten des Duckiebots basieren auf einer Kombination aus lernbasierter Objekterkennung, geometrischer Bereichsprüfung und zeitgesteuerter Bewegungskontrolle. Durch die klare Trennung zwischen Wahrnehmung und Entscheidungslogik kann die Funktionalität modular erweitert und systematisch getestet werden. Der entwickelte Ansatz erwies sich in der Praxis als zuverlässig und adaptiv gegenüber unterschiedlichen Positionen und Bewegungen der Hindernisse.

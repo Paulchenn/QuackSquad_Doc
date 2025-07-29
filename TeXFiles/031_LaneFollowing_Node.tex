@@ -50,6 +50,8 @@ Beim Start der Node werden verschiedene Parameter und Topics initialisiert. Dazu
     \item Registrierung von Subscribern für das Kamerabild und erkannte Bounding Boxes von Objekten (Duckies), die für die Filterung von Bildartefakten herangezogen werden.
 \end{itemize}
 
+\newpage
+
 \subsection{Verarbeitung des Kamerabilds}
 Im Hauptloop wird das empfangene Bild zunächst in den \ac{HSV}-Farbraum transformiert. Anschließend werden Masken für die Farben Weiß, Gelb und Rot erstellt. Für die Rot-Erkennung werden zwei getrennte \ac{HSV}-Bereiche (0--10 und 170--180) kombiniert, um die Umbruchstelle im Farbraum zu berücksichtigen.
 
@@ -73,7 +75,7 @@ Der Zielpunkt \texttt{target\_x} wird über ein gleitendes Mittel aus mehreren W
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.75\textwidth]{Figures/png/Bot_lane_following.png}
+    \includegraphics[width=0.7\textwidth]{Figures/png/Bot_lane_following.png}
     \caption{Visualisierung der Spurverfolgung mit erkannten Linien (grün/gelb) und Zielpunkt \texttt{target\_x} (magenta) in einer Linkskurve}
     \label{fig:lane_following_debug}
 \end{figure}

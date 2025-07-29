@@ -3,9 +3,9 @@
 
 Zur Vermeidung von Kollisionen mit anderen Duckiebots wurden zwei komplementäre Mechanismen implementiert: eine abstandsbasierte Erkennung über den eingebauten \ac{ToF}-Sensor sowie eine visuelle „Rechts vor Links“-Logik an Kreuzungen. Beide Komponenten arbeiten unabhängig, werden jedoch durch eine zentrale Steuerlogik priorisiert und koordiniert.
 
-Die \ac{ToF}-basierte Erkennung ermöglicht die frühzeitige Reaktion auf sich nähernde Objekte im Frontbereich. Eine zentrale Herausforderung bestand dabei darin, zuverlässige Abstandsmessungen in Echtzeit zu gewährleisten, da der \ac{ToF}-Sensor durch Umgebungslicht, reflektierende Oberflächen und Fahrzeugbewegung beeinflusst werden kann. Zudem musste überprüft werden, ob die verbauten Sensoren fehlerfrei messen und korrekt im System eingebunden sind. Die resultierende Node wurde so gestaltet, dass sie schnell genug auf kritische Distanzen reagiert, ohne unnötig häufig oder abrupt zu bremsen.
+Die \ac{ToF}-basierte Erkennung ermöglicht die frühzeitige Reaktion auf sich nähernde Objekte im Frontbereich. Eine zentrale Herausforderung bestand darin, zuverlässige Abstandsmessungen in Echtzeit zu gewährleisten, da der \ac{ToF}-Sensor durch Umgebungslicht und Fahrzeugbewegung beeinflusst werden kann. Die resultierende Node wurde so gestaltet, dass sie schnell genug auf kritische Distanzen reagiert, ohne unnötig häufig oder abrupt zu bremsen.
 
-Parallel dazu wurde für das Verhalten an Kreuzungen eine visuelle Logik implementiert, die erkannte andere Duckiebots im Bild auswertet und in Kombination mit der gewählten Abbiegerichtung die „Rechts vor Links“-Regel durchsetzt. Diese Logik basiert auf Bounding Boxes, die durch ein Detektionsnetzwerk erzeugt und anschließend geometrisch ausgewertet werden. Hierbei war die Herausforderung, nur solche Objekte zu berücksichtigen, die sich tatsächlich auf der Kreuzungsfläche befinden oder in Konflikt mit der eigenen Route stehen.
+Für das Verhalten an Kreuzungen wurde eine visuelle Logik implementiert, die erkannte Duckiebots im Bild auswertet und in Kombination mit der gewählten Abbiegerichtung die „Rechts vor Links“-Regel durchsetzt. Diese Logik basiert auf Bounding Boxes, die durch ein Detektionsnetzwerk erzeugt und geometrisch ausgewertet werden. Hierbei war die Herausforderung, nur solche Objekte zu berücksichtigen, die sich tatsächlich auf der Kreuzungsfläche befinden oder in Konflikt mit der eigenen Route stehen.
 
 Die Kombination beider Konzepte stellte zusätzliche Anforderungen an die Integrationslogik: Der Duckiebot musste situationsabhängig korrekt priorisieren, ob ein Abbremsen aufgrund eines Hindernisses erforderlich ist oder ob an einer Kreuzung gewartet werden muss. Die daraus resultierende Steuerung ist reaktiv und robust gegenüber Einzelereignissen, da alle Nodes nach einem strikten Zeitfenster arbeiten und nur gültige sowie aktuelle Informationen an das zentrale Steuerungssystem übergeben.
 
@@ -17,7 +17,7 @@ Die Kombination beider Konzepte stellte zusätzliche Anforderungen an die Integr
 % Ablaufdiagramm und Beschreibung der Node
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{Figures/png/Ablaufdiagramme_Bericht-Collision_Avoidance.drawio.png}
+    \includegraphics[width=0.38\textwidth]{Figures/png/Ablaufdiagramme_Bericht-Collision_Avoidance.drawio.png}
     \caption{Ablaufdiagramm der Collision Avoidance Node}
     \label{fig:collision_avoidance_node}
 \end{figure}
@@ -63,7 +63,7 @@ Diese Logik greift damit die aus dem Straßenverkehr bekannte Vorfahrtsregel auf
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{Figures/png/Bot_auf_Kreuzung.png}
+    \includegraphics[width=0.6\textwidth]{Figures/png/Bot_auf_Kreuzung.png}
     \caption{Intersection-Node: Bot bereits auf der Kreuzung erkannt (lila Fläche), Abbiegevorgang verzögert}
     \label{fig:intersection_conflict}
 \end{figure}
@@ -72,7 +72,7 @@ Abbildung~\ref{fig:intersection_conflict} zeigt eine Situation, in der ein ander
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{Figures/png/Bot_geradeaus_rechts.png}
+    \includegraphics[width=0.6\textwidth]{Figures/png/Bot_geradeaus_rechts.png}
     \caption{Intersection-Node: Bot gegenüber und rechts erkannt, Abbiegevorgang (links) verzögert}
     \label{fig:intersection_yield}
 \end{figure}
